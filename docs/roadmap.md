@@ -12,8 +12,8 @@ review → PR. Each milestone is one GitHub issue with a checklist.
 - `src/core/`: seeded RNG, board geometry (segments, doubles, trebles, bulls), scoring, 501 double-out with busts.
 - Throw mechanic v1 + **Throw Lab** at `/lab` with sliders, URL-encoded settings, and a "10 darts at T20" drill that reports
   grouping.
-- Headless throw simulator: given a "skill profile" (timing error distribution), what averages come out? Is the
-  difficulty curve plausible?
+- A playable solo 501 leg at `/` (par target, no opponent) and a one-tap "did darts land where you aimed?" rating per leg.
+- Moved to M1 (decision 2026-11-16): headless throw simulator.
 
 ## Gate 1: Throw feel (2026-12-06)
 Five people who are **not Sam** each play at least 10 legs on their own phone, using the Lab's best settings.
@@ -26,6 +26,8 @@ Five people who are **not Sam** each play at least 10 legs on their own phone, u
 - AI opponents with visible averages and a difficulty curve across 8 legs.
 - Tungsten shop with about 20 cards. Card effects are data-driven (a card = data plus a small effect function in `src/core/cards/`).
 - Run end screen. Endless mode is a stretch goal.
+- Headless throw simulator (moved from M0): given a "skill profile" (timing error distribution), what averages come out? Is
+  the difficulty curve plausible?
 - `balance-analyst` simulates 10,000 runs per card set and reports win rate per leg, dominant cards and dead cards.
 - Soft timing hook: the World Championship is on TV mid-December to early January. Show a playable build to a few
   r/darts regulars for feedback (no launch post yet).
