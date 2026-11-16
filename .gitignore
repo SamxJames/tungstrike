@@ -14,3 +14,6 @@ coverage/
 # Only personal, machine-specific settings stay local.
 .claude/settings.local.json
 .claude/worktrees/
+
+# Superpowers subagent-driven-development scratch (ledgers, briefs, review packages)
+.superpowers/
