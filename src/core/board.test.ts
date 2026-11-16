@@ -29,9 +29,13 @@ describe('bedAt', () => {
     expect(bedAt({ x: 0, y: 1660 }).isDouble).toBe(true)
   })
   it('puts a point exactly on a wire in the sector clockwise of it', () => {
-    // 9 degrees clockwise of straight up is the 20/1 wire; points on it belong to sector 1.
-    expect(bedAt({ x: 0, y: 1030 }).sector).toBe(20)
-    expect(bedAt({ x: 200, y: 1000 }).sector).toBe(1)
+    // The four diagonals are exact table wires, so integer points sit on them.
+    expect(bedAt({ x: 500, y: 500 }).sector).toBe(4)     // 18/4 wire, 45 deg
+    expect(bedAt({ x: 500, y: -500 }).sector).toBe(2)    // 15/2 wire, 135 deg
+    expect(bedAt({ x: -500, y: -500 }).sector).toBe(16)  // 7/16 wire, 225 deg
+    expect(bedAt({ x: -500, y: 500 }).sector).toBe(12)   // 9/12 wire, 315 deg
+    expect(bedAt({ x: 499, y: 500 }).sector).toBe(18)    // one unit anticlockwise of the 45 deg wire
+    expect(bedAt({ x: 501, y: 500 }).sector).toBe(4)     // one unit clockwise of it
   })
 })
 
