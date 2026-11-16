@@ -1,0 +1,1467 @@
+{
+ "log": {
+  "v": 1,
+  "seed": 12345,
+  "settings": {
+   "wobbleRadius": 25,
+   "loopMs": 1600,
+   "shape": 100,
+   "scatterCap": 10,
+   "leadMs": 60,
+   "zoomPct": 200
+  },
+  "throws": [
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 15
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 68
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 121
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 174
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 57
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 110
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 163
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 46
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 99
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 152
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 35
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 88
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 141
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 24
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 77
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 130
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 183
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 66
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 119
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 172
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 55
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 108
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 161
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 44
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 97
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 150
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 33
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 86
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 139
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 22
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 75
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 128
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 181
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 64
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 117
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 170
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 53
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 106
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 159
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 42
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 95
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 148
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 31
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 84
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 137
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 20
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 73
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 126
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 179
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 62
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 115
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 168
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 51
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 104
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 157
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 40
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 93
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 146
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 29
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 0
+    },
+    "releaseTick": 82
+   }
+  ]
+ },
+ "expected": {
+  "throws": [
+   {
+    "index": 0,
+    "leg": 0,
+    "crosshair": {
+     "x": 177,
+     "y": 1112
+    },
+    "landing": {
+     "x": 166,
+     "y": 1135
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 481,
+    "bust": false
+   },
+   {
+    "index": 1,
+    "leg": 0,
+    "crosshair": {
+     "x": 107,
+     "y": 1121
+    },
+    "landing": {
+     "x": 105,
+     "y": 1127
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 461,
+    "bust": false
+   },
+   {
+    "index": 2,
+    "leg": 0,
+    "crosshair": {
+     "x": 44,
+     "y": 987
+    },
+    "landing": {
+     "x": 29,
+     "y": 1043
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 401,
+    "bust": false
+   },
+   {
+    "index": 3,
+    "leg": 0,
+    "crosshair": {
+     "x": -145,
+     "y": 1130
+    },
+    "landing": {
+     "x": -172,
+     "y": 1127
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 381,
+    "bust": false
+   },
+   {
+    "index": 4,
+    "leg": 0,
+    "crosshair": {
+     "x": 140,
+     "y": -100
+    },
+    "landing": {
+     "x": 184,
+     "y": -145
+    },
+    "ring": "innerSingle",
+    "sector": 15,
+    "score": 15,
+    "remaining": 366,
+    "bust": false
+   },
+   {
+    "index": 5,
+    "leg": 0,
+    "crosshair": {
+     "x": -193,
+     "y": 1081
+    },
+    "landing": {
+     "x": -144,
+     "y": 1086
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 346,
+    "bust": false
+   },
+   {
+    "index": 6,
+    "leg": 0,
+    "crosshair": {
+     "x": -157,
+     "y": 1127
+    },
+    "landing": {
+     "x": -202,
+     "y": 1110
+    },
+    "ring": "outerSingle",
+    "sector": 5,
+    "score": 5,
+    "remaining": 341,
+    "bust": false
+   },
+   {
+    "index": 7,
+    "leg": 0,
+    "crosshair": {
+     "x": -173,
+     "y": 1116
+    },
+    "landing": {
+     "x": -175,
+     "y": 1106
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 321,
+    "bust": false
+   },
+   {
+    "index": 8,
+    "leg": 0,
+    "crosshair": {
+     "x": 150,
+     "y": 1129
+    },
+    "landing": {
+     "x": 150,
+     "y": 1129
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 301,
+    "bust": false
+   },
+   {
+    "index": 9,
+    "leg": 0,
+    "crosshair": {
+     "x": -155,
+     "y": -98
+    },
+    "landing": {
+     "x": -143,
+     "y": -96
+    },
+    "ring": "innerSingle",
+    "sector": 16,
+    "score": 16,
+    "remaining": 285,
+    "bust": false
+   },
+   {
+    "index": 10,
+    "leg": 0,
+    "crosshair": {
+     "x": 199,
+     "y": 1014
+    },
+    "landing": {
+     "x": 241,
+     "y": 1012
+    },
+    "ring": "treble",
+    "sector": 1,
+    "score": 3,
+    "remaining": 282,
+    "bust": false
+   },
+   {
+    "index": 11,
+    "leg": 0,
+    "crosshair": {
+     "x": -154,
+     "y": 932
+    },
+    "landing": {
+     "x": -208,
+     "y": 911
+    },
+    "ring": "innerSingle",
+    "sector": 5,
+    "score": 5,
+    "remaining": 277,
+    "bust": false
+   },
+   {
+    "index": 12,
+    "leg": 0,
+    "crosshair": {
+     "x": -160,
+     "y": 934
+    },
+    "landing": {
+     "x": -128,
+     "y": 877
+    },
+    "ring": "innerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 257,
+    "bust": false
+   },
+   {
+    "index": 13,
+    "leg": 0,
+    "crosshair": {
+     "x": 60,
+     "y": 972
+    },
+    "landing": {
+     "x": 60,
+     "y": 971
+    },
+    "ring": "innerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 237,
+    "bust": false
+   },
+   {
+    "index": 14,
+    "leg": 0,
+    "crosshair": {
+     "x": 53,
+     "y": -51
+    },
+    "landing": {
+     "x": 99,
+     "y": -78
+    },
+    "ring": "outerBull",
+    "sector": 0,
+    "score": 25,
+    "remaining": 212,
+    "bust": false
+   },
+   {
+    "index": 15,
+    "leg": 0,
+    "crosshair": {
+     "x": -50,
+     "y": 1078
+    },
+    "landing": {
+     "x": 14,
+     "y": 1096
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 192,
+    "bust": false
+   },
+   {
+    "index": 16,
+    "leg": 0,
+    "crosshair": {
+     "x": 137,
+     "y": 930
+    },
+    "landing": {
+     "x": 206,
+     "y": 929
+    },
+    "ring": "innerSingle",
+    "sector": 1,
+    "score": 1,
+    "remaining": 191,
+    "bust": false
+   },
+   {
+    "index": 17,
+    "leg": 0,
+    "crosshair": {
+     "x": -196,
+     "y": 1068
+    },
+    "landing": {
+     "x": -200,
+     "y": 1044
+    },
+    "ring": "treble",
+    "sector": 5,
+    "score": 15,
+    "remaining": 176,
+    "bust": false
+   },
+   {
+    "index": 18,
+    "leg": 0,
+    "crosshair": {
+     "x": 198,
+     "y": 1000
+    },
+    "landing": {
+     "x": 197,
+     "y": 1005
+    },
+    "ring": "treble",
+    "sector": 1,
+    "score": 3,
+    "remaining": 173,
+    "bust": false
+   },
+   {
+    "index": 19,
+    "leg": 0,
+    "crosshair": {
+     "x": 184,
+     "y": -72
+    },
+    "landing": {
+     "x": 185,
+     "y": -78
+    },
+    "ring": "innerSingle",
+    "sector": 10,
+    "score": 10,
+    "remaining": 163,
+    "bust": false
+   },
+   {
+    "index": 20,
+    "leg": 0,
+    "crosshair": {
+     "x": -138,
+     "y": 1130
+    },
+    "landing": {
+     "x": -142,
+     "y": 1140
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 143,
+    "bust": false
+   },
+   {
+    "index": 21,
+    "leg": 0,
+    "crosshair": {
+     "x": 199,
+     "y": 1048
+    },
+    "landing": {
+     "x": 258,
+     "y": 1008
+    },
+    "ring": "treble",
+    "sector": 1,
+    "score": 3,
+    "remaining": 140,
+    "bust": false
+   },
+   {
+    "index": 22,
+    "leg": 0,
+    "crosshair": {
+     "x": -84,
+     "y": 953
+    },
+    "landing": {
+     "x": -77,
+     "y": 946
+    },
+    "ring": "innerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 120,
+    "bust": false
+   },
+   {
+    "index": 23,
+    "leg": 0,
+    "crosshair": {
+     "x": 199,
+     "y": 1052
+    },
+    "landing": {
+     "x": 210,
+     "y": 1122
+    },
+    "ring": "outerSingle",
+    "sector": 1,
+    "score": 1,
+    "remaining": 119,
+    "bust": false
+   },
+   {
+    "index": 24,
+    "leg": 0,
+    "crosshair": {
+     "x": -41,
+     "y": -40
+    },
+    "landing": {
+     "x": -38,
+     "y": -49
+    },
+    "ring": "bull",
+    "sector": 0,
+    "score": 50,
+    "remaining": 69,
+    "bust": false
+   },
+   {
+    "index": 25,
+    "leg": 0,
+    "crosshair": {
+     "x": 193,
+     "y": 1079
+    },
+    "landing": {
+     "x": 194,
+     "y": 1079
+    },
+    "ring": "outerSingle",
+    "sector": 1,
+    "score": 1,
+    "remaining": 68,
+    "bust": false
+   },
+   {
+    "index": 26,
+    "leg": 0,
+    "crosshair": {
+     "x": -155,
+     "y": 1128
+    },
+    "landing": {
+     "x": -145,
+     "y": 1112
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 48,
+    "bust": false
+   },
+   {
+    "index": 27,
+    "leg": 0,
+    "crosshair": {
+     "x": -47,
+     "y": 1076
+    },
+    "landing": {
+     "x": -47,
+     "y": 1079
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 28,
+    "bust": false
+   },
+   {
+    "index": 28,
+    "leg": 0,
+    "crosshair": {
+     "x": -151,
+     "y": 931
+    },
+    "landing": {
+     "x": -115,
+     "y": 907
+    },
+    "ring": "innerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 8,
+    "bust": false
+   },
+   {
+    "index": 29,
+    "leg": 0,
+    "crosshair": {
+     "x": -105,
+     "y": 89
+    },
+    "landing": {
+     "x": -115,
+     "y": 80
+    },
+    "ring": "outerBull",
+    "sector": 0,
+    "score": 25,
+    "remaining": 48,
+    "bust": true
+   },
+   {
+    "index": 30,
+    "leg": 0,
+    "crosshair": {
+     "x": 152,
+     "y": 1129
+    },
+    "landing": {
+     "x": 144,
+     "y": 1131
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 28,
+    "bust": false
+   },
+   {
+    "index": 31,
+    "leg": 0,
+    "crosshair": {
+     "x": 5,
+     "y": 1025
+    },
+    "landing": {
+     "x": 14,
+     "y": 1036
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 48,
+    "bust": true
+   },
+   {
+    "index": 32,
+    "leg": 0,
+    "crosshair": {
+     "x": -170,
+     "y": 940
+    },
+    "landing": {
+     "x": -184,
+     "y": 948
+    },
+    "ring": "innerSingle",
+    "sector": 5,
+    "score": 5,
+    "remaining": 43,
+    "bust": false
+   },
+   {
+    "index": 33,
+    "leg": 0,
+    "crosshair": {
+     "x": -20,
+     "y": 1050
+    },
+    "landing": {
+     "x": -18,
+     "y": 1077
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 23,
+    "bust": false
+   },
+   {
+    "index": 34,
+    "leg": 0,
+    "crosshair": {
+     "x": -194,
+     "y": 48
+    },
+    "landing": {
+     "x": -228,
+     "y": 77
+    },
+    "ring": "innerSingle",
+    "sector": 14,
+    "score": 14,
+    "remaining": 9,
+    "bust": false
+   },
+   {
+    "index": 35,
+    "leg": 0,
+    "crosshair": {
+     "x": 136,
+     "y": 1130
+    },
+    "landing": {
+     "x": 146,
+     "y": 1096
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 36,
+    "leg": 0,
+    "crosshair": {
+     "x": -199,
+     "y": 1012
+    },
+    "landing": {
+     "x": -192,
+     "y": 1060
+    },
+    "ring": "outerSingle",
+    "sector": 5,
+    "score": 5,
+    "remaining": 4,
+    "bust": false
+   },
+   {
+    "index": 37,
+    "leg": 0,
+    "crosshair": {
+     "x": -95,
+     "y": 1114
+    },
+    "landing": {
+     "x": -95,
+     "y": 1114
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 38,
+    "leg": 0,
+    "crosshair": {
+     "x": -35,
+     "y": 1065
+    },
+    "landing": {
+     "x": -43,
+     "y": 1081
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 39,
+    "leg": 0,
+    "crosshair": {
+     "x": 16,
+     "y": -15
+    },
+    "landing": {
+     "x": 0,
+     "y": 12
+    },
+    "ring": "bull",
+    "sector": 0,
+    "score": 50,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 40,
+    "leg": 0,
+    "crosshair": {
+     "x": 145,
+     "y": 1130
+    },
+    "landing": {
+     "x": 207,
+     "y": 1107
+    },
+    "ring": "outerSingle",
+    "sector": 1,
+    "score": 1,
+    "remaining": 8,
+    "bust": false
+   },
+   {
+    "index": 41,
+    "leg": 0,
+    "crosshair": {
+     "x": -125,
+     "y": 1128
+    },
+    "landing": {
+     "x": -123,
+     "y": 1124
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 42,
+    "leg": 0,
+    "crosshair": {
+     "x": -190,
+     "y": 970
+    },
+    "landing": {
+     "x": -237,
+     "y": 933
+    },
+    "ring": "innerSingle",
+    "sector": 5,
+    "score": 5,
+    "remaining": 4,
+    "bust": false
+   },
+   {
+    "index": 43,
+    "leg": 0,
+    "crosshair": {
+     "x": 152,
+     "y": 931
+    },
+    "landing": {
+     "x": 167,
+     "y": 982
+    },
+    "ring": "treble",
+    "sector": 1,
+    "score": 3,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 44,
+    "leg": 0,
+    "crosshair": {
+     "x": 190,
+     "y": -60
+    },
+    "landing": {
+     "x": 165,
+     "y": -75
+    },
+    "ring": "innerSingle",
+    "sector": 10,
+    "score": 10,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 45,
+    "leg": 0,
+    "crosshair": {
+     "x": 81,
+     "y": 956
+    },
+    "landing": {
+     "x": 97,
+     "y": 975
+    },
+    "ring": "innerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 46,
+    "leg": 0,
+    "crosshair": {
+     "x": -46,
+     "y": 1076
+    },
+    "landing": {
+     "x": -40,
+     "y": 1084
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 47,
+    "leg": 0,
+    "crosshair": {
+     "x": -121,
+     "y": 934
+    },
+    "landing": {
+     "x": -148,
+     "y": 918
+    },
+    "ring": "innerSingle",
+    "sector": 5,
+    "score": 5,
+    "remaining": 4,
+    "bust": false
+   },
+   {
+    "index": 48,
+    "leg": 0,
+    "crosshair": {
+     "x": -26,
+     "y": 1055
+    },
+    "landing": {
+     "x": -20,
+     "y": 1052
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 49,
+    "leg": 0,
+    "crosshair": {
+     "x": 164,
+     "y": 94
+    },
+    "landing": {
+     "x": 172,
+     "y": 94
+    },
+    "ring": "innerSingle",
+    "sector": 4,
+    "score": 4,
+    "remaining": 5,
+    "bust": false
+   },
+   {
+    "index": 50,
+    "leg": 0,
+    "crosshair": {
+     "x": 170,
+     "y": 1120
+    },
+    "landing": {
+     "x": 150,
+     "y": 1097
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 51,
+    "leg": 0,
+    "crosshair": {
+     "x": 173,
+     "y": 943
+    },
+    "landing": {
+     "x": 174,
+     "y": 923
+    },
+    "ring": "innerSingle",
+    "sector": 1,
+    "score": 1,
+    "remaining": 8,
+    "bust": false
+   },
+   {
+    "index": 52,
+    "leg": 0,
+    "crosshair": {
+     "x": 57,
+     "y": 1085
+    },
+    "landing": {
+     "x": 5,
+     "y": 1041
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 53,
+    "leg": 0,
+    "crosshair": {
+     "x": -194,
+     "y": 982
+    },
+    "landing": {
+     "x": -226,
+     "y": 1005
+    },
+    "ring": "treble",
+    "sector": 5,
+    "score": 15,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 54,
+    "leg": 0,
+    "crosshair": {
+     "x": 132,
+     "y": -99
+    },
+    "landing": {
+     "x": 199,
+     "y": -120
+    },
+    "ring": "innerSingle",
+    "sector": 15,
+    "score": 15,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 55,
+    "leg": 0,
+    "crosshair": {
+     "x": -141,
+     "y": 1130
+    },
+    "landing": {
+     "x": -132,
+     "y": 1149
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 56,
+    "leg": 0,
+    "crosshair": {
+     "x": -193,
+     "y": 1081
+    },
+    "landing": {
+     "x": -166,
+     "y": 1118
+    },
+    "ring": "outerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 57,
+    "leg": 0,
+    "crosshair": {
+     "x": 190,
+     "y": 1089
+    },
+    "landing": {
+     "x": 202,
+     "y": 1018
+    },
+    "ring": "treble",
+    "sector": 1,
+    "score": 3,
+    "remaining": 6,
+    "bust": false
+   },
+   {
+    "index": 58,
+    "leg": 0,
+    "crosshair": {
+     "x": 5,
+     "y": 1035
+    },
+    "landing": {
+     "x": 4,
+     "y": 1032
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 9,
+    "bust": true
+   },
+   {
+    "index": 59,
+    "leg": 0,
+    "crosshair": {
+     "x": 119,
+     "y": 96
+    },
+    "landing": {
+     "x": 158,
+     "y": 62
+    },
+    "ring": "innerSingle",
+    "sector": 13,
+    "score": 13,
+    "remaining": 9,
+    "bust": true
+   }
+  ],
+  "legs": [
+   {
+    "darts": 60,
+    "won": false,
+    "busts": 20
+   }
+  ]
+ }
+}
