@@ -1,6 +1,6 @@
 # M0 spec: foundations, throw mechanic v1, Throw Lab and a playable leg
 
-Status: **draft, waiting for Sam's approval.** Written 2026-11-16 by the lead, from a three-advisor panel
+Status: **approved by Sam 2026-11-16, with Gate 1 wording A (testers play as many legs as they like; 10 or more is the bar).** Written 2026-11-16 by the lead, from a three-advisor panel
 (game-designer, product-strategist, ux-reviewer). Issue: M0. Gate it serves: Gate 1, throw feel (2026-12-06).
 
 ## In one screen (for phone reading)

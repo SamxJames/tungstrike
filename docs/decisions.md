@@ -2,6 +2,9 @@
 
 Newest first. Each entry: date · decision · why · what would change it.
 
+- **2026-11-16 · Gate 1 wording A (Sam).** Testers are told "play as many as you like"; we count legs, and 10 or more is the bar
+  for "at least 10 legs". "Starts another leg without being asked" is then measured honestly. Why: telling them to play 10
+  would hide whether they'd want to. Change only before the gate is read.
 - **2026-11-16 · Decision hierarchy.** Sam asked for decisions to be automated. Advisors (`game-designer`, `product-strategist`,
   `ux-reviewer`) give picks with confidence and reversibility; the lead decides and logs here with a one-line why. **Sam still
   decides** anything that costs money or opens accounts, is seen beyond the named testers, touches the never-list or
