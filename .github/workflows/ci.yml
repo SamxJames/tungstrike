@@ -1,0 +1,50 @@
+# Guard, lint, typecheck, unit tests and mobile e2e on every PR and push to main.
+# main is protected: this check must pass before a PR can merge (unlike Curio, where CI ran after the deploy).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Detect app
+        id: app
+        run: |
+          if [ -f package-lock.json ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; echo "No app yet (starter kit only)."; fi
+
+      - uses: actions/setup-node@v5
+        if: steps.app.outputs.present == 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+        if: steps.app.outputs.present == 'true'
+
+      - run: npm run check
+        if: steps.app.outputs.present == 'true'
+
+      - name: Mobile e2e
+        if: steps.app.outputs.present == 'true' && hashFiles('playwright.config.ts') != ''
+        run: npx playwright install --with-deps chromium && npx playwright test
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.app.outputs.present == 'true'
+        with:
+          name: mobile-screenshots
+          path: test-results/
+          if-no-files-found: ignore

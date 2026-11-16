@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.vercel/
+.env
+.env.*
+!.env.example
+test-results/
+playwright-report/
+coverage/
+*.log
+.DS_Store
+
+# Claude Code: the shared setup in .claude/ IS committed (so cloud sessions get it).
+# Only personal, machine-specific settings stay local.
+.claude/settings.local.json
+.claude/worktrees/
