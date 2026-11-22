@@ -46,4 +46,32 @@ describe('AimSession', () => {
     expect(s.tick(5000)).toBe(0)
     expect(s.release(5400, 0)).not.toBeNull()
   })
+  it('ignores a release stamped before resume()', () => {
+    const s = new AimSession(T20, 0)
+    s.pause()
+    s.resume(5000)
+    expect(s.release(4999, 0)).toBeNull()
+  })
+  it('ignores a release stamped before the next dart starts', () => {
+    const s = new AimSession(T20, 0)
+    s.release(500, 0)
+    expect(s.advance(1100)).toBe(true)
+    expect(s.release(1099, 0)).toBeNull()
+    expect(s.release(1100, 0)).not.toBeNull()
+  })
+  it('accepts a release stamped exactly at the aim start', () => {
+    const s = new AimSession(T20, 1000)
+    expect(s.release(1000, 0)).toEqual({ target: T20, releaseTick: 0, rawMs: 0 })
+  })
+  it('resume() when not paused does not restart the wobble', () => {
+    const s = new AimSession(T20, 0)
+    s.resume(1000)
+    expect(s.tick(1000)).toBe(125)
+  })
+  it('retarget() while paused returns false and leaves the target unchanged', () => {
+    const s = new AimSession(T20, 0)
+    s.pause()
+    expect(s.retarget(100, { x: 0, y: 0 })).toBe(false)
+    expect(s.target).toEqual(T20)
+  })
 })

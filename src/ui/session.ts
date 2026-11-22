@@ -25,7 +25,7 @@ export class AimSession {
   }
 
   retarget(nowMs: number, target: Point): boolean {
-    if (this.phase !== 'aiming') return false
+    if (this.paused || this.phase !== 'aiming') return false
     this.target = target
     this.aimStartMs = nowMs
     this.lockedUntilMs = nowMs + RETARGET_LOCK_MS
@@ -33,7 +33,8 @@ export class AimSession {
   }
 
   release(eventMs: number, leadMs: number): ThrowInput | null {
-    if (this.paused || this.phase !== 'aiming' || eventMs < this.lockedUntilMs) return null
+    if (this.paused || this.phase !== 'aiming') return null
+    if (eventMs < this.lockedUntilMs || eventMs < this.aimStartMs) return null
     const rawMs = Math.max(0, Math.floor(eventMs - this.aimStartMs))
     this.phase = 'cooldown'
     this.cooldownUntilMs = eventMs + THROW_LOCK_MS
@@ -55,6 +56,7 @@ export class AimSession {
   }
 
   resume(nowMs: number): void {
+    if (!this.paused) return
     this.paused = false
     if (this.phase === 'aiming') this.aimStartMs = nowMs
     else this.cooldownUntilMs = Math.max(this.cooldownUntilMs, nowMs)
