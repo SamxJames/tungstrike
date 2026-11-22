@@ -97,3 +97,34 @@ test('leg: Copy my results is reachable before a win, confirms, and goes back to
   await expect(page.getByTestId('copy-results')).toHaveCount(0)
   await expect(page.getByTestId('remaining')).toBeVisible()
 })
+
+for (const clipboard of ['accepts', 'rejects'] as const) {
+  test(`leg: copy status goes stale-free when a dart lands after it (clipboard ${clipboard})`, async ({ page }) => {
+    await page.addInitScript((mode) => {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: () => (mode === 'accepts' ? Promise.resolve() : Promise.reject(new Error('denied'))) },
+        configurable: true,
+      })
+    }, clipboard)
+    await page.goto(EASY)
+    await page.getByTestId('skip-calibration').click()
+    await page.getByTestId('skip-warmup').click()
+    await page.waitForTimeout(700)
+    await page.getByTestId('release-pad').click()
+    await expect(page.getByTestId('darts-used')).toHaveText('1', { timeout: 3000 })
+    await page.getByTestId('open-results').click()
+    await page.getByTestId('copy-results').click()
+    if (clipboard === 'accepts') await expect(page.getByText('Copied.')).toBeVisible()
+    else await expect(page.locator('textarea')).toBeVisible()
+    await page.getByTestId('close-results').click()
+    await page.waitForTimeout(700)
+    await page.getByTestId('release-pad').click()
+    await expect(page.getByTestId('darts-used')).toHaveText('2', { timeout: 3000 })
+    await page.getByTestId('open-results').click()
+    // The data changed since the copy, so neither the confirmation nor the old fallback text may still show.
+    await expect(page.getByText('Your results so far')).toBeVisible()
+    await expect(page.getByText('Copied.')).toHaveCount(0)
+    await expect(page.getByText('Could not copy')).toHaveCount(0)
+    await expect(page.locator('textarea')).toHaveCount(0)
+  })
+}

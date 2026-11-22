@@ -51,6 +51,16 @@ export function Leg() {
   const [sent, setSent] = useState<'idle' | 'sending' | 'ok' | 'failed'>('idle')
   const [copied, setCopied] = useState<'idle' | 'ok' | 'failed'>('idle')
   const [copyText, setCopyText] = useState('')
+  // Bumped whenever the payload content changes, so a send/copy that finishes late cannot mark newer data as sent.
+  const statusVersion = useRef(0)
+
+  /** Sent/Copied/fallback text only describe the payload they were made from: clear them whenever it changes. */
+  const resetResultsStatus = () => {
+    statusVersion.current += 1
+    setSent('idle')
+    setCopied('idle')
+    setCopyText('')
+  }
 
   const advance = (next: LegFlow) => {
     flowRef.current = next
@@ -91,6 +101,7 @@ export function Leg() {
   const onThrow = (e: ThrowEvent) => {
     runInputs.current.push(e.input)
     advance(onDart(flowRef.current!, e.result.bed))
+    resetResultsStatus()
   }
 
   const rate = (rating: Rating) => {
@@ -98,13 +109,18 @@ export function Leg() {
     const next = rateLeg(flowRef.current!, rating, { build: __BUILD_ID__, settingsKey: settingsKey(frozen), visit })
     if (next === flowRef.current) return // one rating per won leg, however fast the taps come
     advance(next)
+    resetResultsStatus()
     saveJson(LEGS_KEY, next.legs)
   }
 
   const another = () => {
     advance(nextLeg(flowRef.current!))
-    setSent('idle')
-    setCopied('idle')
+    resetResultsStatus()
+    setShowResults(false)
+  }
+
+  const closeResults = () => {
+    resetResultsStatus()
     setShowResults(false)
   }
 
@@ -127,18 +143,21 @@ export function Leg() {
   }
 
   const send = async () => {
+    const version = statusVersion.current
     setSent('sending')
-    setSent((await sendResults(FEEDBACK_URL, payload())) ? 'ok' : 'failed')
+    const ok = await sendResults(FEEDBACK_URL, payload())
+    if (version === statusVersion.current) setSent(ok ? 'ok' : 'failed') // the data moved on while sending: drop the stale answer
   }
 
   const copy = async () => {
+    const version = statusVersion.current
     const text = resultsText(payload())
     setCopyText(text)
     try {
       await navigator.clipboard.writeText(text)
-      setCopied('ok')
+      if (version === statusVersion.current) setCopied('ok')
     } catch {
-      setCopied('failed')
+      if (version === statusVersion.current) setCopied('failed')
     }
   }
 
@@ -260,7 +279,7 @@ export function Leg() {
               <p class="muted">{leg.dartsTotal} {leg.dartsTotal === 1 ? 'dart' : 'darts'} in this leg, {flow.legs.filter((l) => l.visit === visit).length} finished.</p>
               {resultsActions}
               <div class="row">
-                <button class="btn primary" data-testid="close-results" onClick={() => setShowResults(false)}>Back to the leg</button>
+                <button class="btn primary" data-testid="close-results" onClick={closeResults}>Back to the leg</button>
               </div>
             </>
           )}
