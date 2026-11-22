@@ -43,3 +43,4 @@ button { font: inherit; color: inherit; }
 .btn:disabled { opacity: 0.45; }
 .hud-skip { position: fixed; top: 0; right: 8px; z-index: 3; height: 48px; display: flex; align-items: center; }
 .hud-skip .btn { min-height: 44px; padding: 0 14px; }
+.results-btn { position: fixed; left: 8px; top: 54px; z-index: 3; min-height: 44px; padding: 0 12px; background: rgba(20, 23, 28, 0.85); }

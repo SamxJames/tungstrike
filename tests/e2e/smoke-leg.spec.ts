@@ -69,3 +69,31 @@ test('leg: ten warm-up darts lead into the leg (or offer a lead adjustment first
   await expect(remaining).toHaveText('501')
   await expect(page.getByTestId('darts-used')).toHaveText('0')
 })
+
+test('leg: Copy my results is reachable before a win, confirms, and goes back to the leg', async ({ page }, info) => {
+  // Make the copy path deterministic: the clipboard accepts the text (same stub idea as the Lab share test).
+  await page.addInitScript(() => {
+    const w = window as unknown as { __copied: string[] }
+    w.__copied = []
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: (t: string) => { w.__copied.push(t); return Promise.resolve() } }, configurable: true })
+  })
+  await page.goto(EASY)
+  await page.getByTestId('skip-calibration').click()
+  await page.getByTestId('skip-warmup').click()
+  await page.waitForTimeout(700)
+  await page.getByTestId('release-pad').click()
+  await expect(page.getByTestId('darts-used')).toHaveText('1', { timeout: 3000 })
+  await page.screenshot({ path: `test-results/leg-results-btn-${info.project.name}.png` })
+  await page.getByTestId('open-results').click()
+  await expect(page.getByText('Your results so far')).toBeVisible()
+  await page.getByTestId('copy-results').click()
+  await expect(page.getByText('Copied.')).toBeVisible()
+  await page.screenshot({ path: `test-results/leg-results-${info.project.name}.png` })
+  const copied = await page.evaluate(() => (window as unknown as { __copied: string[] }).__copied)
+  expect(copied).toHaveLength(1)
+  expect(copied[0]).toContain('Run code:')
+  expect(copied[0]).toContain('No legs finished yet')
+  await page.getByTestId('close-results').click()
+  await expect(page.getByTestId('copy-results')).toHaveCount(0)
+  await expect(page.getByTestId('remaining')).toBeVisible()
+})

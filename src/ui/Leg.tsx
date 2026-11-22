@@ -3,15 +3,15 @@ import { bedCentre, makeBed } from '../core/board.ts'
 import { DEFAULT_PAR } from '../core/constants.ts'
 import { bestLead } from '../core/lead.ts'
 import type { LeadSuggestion } from '../core/lead.ts'
-import { applyDart, newLeg } from '../core/leg.ts'
-import type { LegState } from '../core/leg.ts'
 import { encodeRunCode } from '../core/replay.ts'
-import { decodeSettings, DEFAULT_SETTINGS } from '../core/settings.ts'
+import { decodeSettings, DEFAULT_SETTINGS, encodeSettings } from '../core/settings.ts'
 import type { RunLog, Settings, ThrowInput } from '../core/types.ts'
 import { snapLead } from './calibrate-math.ts'
 import { Calibrate } from './Calibrate.tsx'
-import { resultsText, sendResults } from './feedback.ts'
-import type { LegRecord, ResultsPayload } from './feedback.ts'
+import { parseStoredLegs, resultsText, sendResults } from './feedback.ts'
+import type { Rating, ResultsPayload } from './feedback.ts'
+import { another as nextLeg, initFlow, onDart, rate as rateLeg } from './legFlow.ts'
+import type { LegFlow } from './legFlow.ts'
 import { loadJson, loadLead, saveJson, saveLead } from './store.ts'
 import { ThrowStage } from './ThrowStage.tsx'
 import type { ThrowEvent } from './ThrowStage.tsx'
@@ -20,10 +20,11 @@ const T20 = bedCentre(makeBed('treble', 20))
 const LEGS_KEY = 'ts.legs.v1'
 const WARMUP_DARTS = 10
 const newSeed = () => crypto.getRandomValues(new Uint32Array(1))[0]
+const newVisitId = () => Array.from(crypto.getRandomValues(new Uint8Array(6)), (b) => b.toString(16).padStart(2, '0')).join('')
 const FEEDBACK_URL = import.meta.env.VITE_FEEDBACK_URL
+const settingsKey = (s: Settings) => `${encodeSettings(s)};lead=${s.leadMs}`
 
 type Step = 'calibrate' | 'warmup' | 'playing'
-type Rating = NonNullable<LegRecord['rating']>
 
 interface WarmRun { inputs: ThrowInput[]; ctxs: ThrowEvent['ctx'][]; settings: Settings | null }
 
@@ -35,23 +36,26 @@ export function Leg() {
   const [played, setPlayed] = useState<Settings | null>(null)
   const [warmSeed] = useState(newSeed)
   const [legSeed] = useState(newSeed)
+  const [visit] = useState(newVisitId)
   const warm = useRef<WarmRun>({ inputs: [], ctxs: [], settings: null })
   const [warmCount, setWarmCount] = useState(0)
   const [suggest, setSuggest] = useState<LeadSuggestion | null>(null)
   // Every dart thrown while playing, across legs, in order. The stage is never remounted while playing, so
   // the stage's throw index is the position in this list and the log replays from the seed.
   const runInputs = useRef<ThrowInput[]>([])
-  // The leg lives in a ref so the next state is computed outside any state updater.
-  const legRef = useRef<LegState>(newLeg())
-  const [leg, setLeg] = useState<LegState>(legRef.current)
-  const [legs, setLegs] = useState<LegRecord[]>(() => {
-    const stored = loadJson<unknown>(LEGS_KEY, [])
-    return Array.isArray(stored) ? (stored as LegRecord[]) : []
-  })
-  const [ratingPending, setRatingPending] = useState(false)
-  const awaitingRating = useRef(false)
+  // The play flow lives in a ref and is advanced outside any state updater, then pushed to state.
+  const flowRef = useRef<LegFlow | null>(null)
+  if (flowRef.current === null) flowRef.current = initFlow(parseStoredLegs(loadJson<unknown>(LEGS_KEY, [])))
+  const [flow, setFlow] = useState<LegFlow>(flowRef.current)
+  const [showResults, setShowResults] = useState(false)
   const [sent, setSent] = useState<'idle' | 'sending' | 'ok' | 'failed'>('idle')
   const [copied, setCopied] = useState<'idle' | 'ok' | 'failed'>('idle')
+  const [copyText, setCopyText] = useState('')
+
+  const advance = (next: LegFlow) => {
+    flowRef.current = next
+    setFlow(next)
+  }
 
   const setLead = (ms: number) => {
     saveLead(ms)
@@ -86,32 +90,40 @@ export function Leg() {
 
   const onThrow = (e: ThrowEvent) => {
     runInputs.current.push(e.input)
-    const before = legRef.current
-    const next = applyDart(before, e.result.bed)
-    legRef.current = next
-    setLeg(next)
-    if (next.won && !before.won) {
-      awaitingRating.current = true
-      setRatingPending(true)
-    }
+    advance(onDart(flowRef.current!, e.result.bed))
   }
 
   const rate = (rating: Rating) => {
-    if (!awaitingRating.current) return // one rating per won leg, however fast the taps come
-    awaitingRating.current = false
-    const finished = legRef.current
-    const all = [...legs, { darts: finished.dartsTotal, busts: finished.busts, won: true, rating }]
-    setLegs(all)
-    saveJson(LEGS_KEY, all)
-    setRatingPending(false)
+    const frozen = played ?? settings
+    const next = rateLeg(flowRef.current!, rating, { build: __BUILD_ID__, settingsKey: settingsKey(frozen), visit })
+    if (next === flowRef.current) return // one rating per won leg, however fast the taps come
+    advance(next)
+    saveJson(LEGS_KEY, next.legs)
   }
 
+  const another = () => {
+    advance(nextLeg(flowRef.current!))
+    setSent('idle')
+    setCopied('idle')
+    setShowResults(false)
+  }
+
+  /** Only this visit's legs go out: the run log covers this visit only, and earlier visits were sent (or not) then. */
   const payload = (): ResultsPayload => {
     const frozen = played ?? settings
     const run: RunLog = { v: 1, seed: legSeed, settings: frozen, throws: runInputs.current }
     const w = warm.current
     const warmLog: RunLog | null = w.inputs.length ? { v: 1, seed: warmSeed, settings: w.settings ?? settings, throws: w.inputs } : null
-    return { v: 1, build: __BUILD_ID__, device: navigator.userAgent, settings: frozen, legs, run: encodeRunCode(run), warmup: warmLog ? encodeRunCode(warmLog) : null }
+    return {
+      v: 1,
+      build: __BUILD_ID__,
+      visit,
+      device: navigator.userAgent,
+      settings: frozen,
+      legs: flowRef.current!.legs.filter((l) => l.visit === visit),
+      run: encodeRunCode(run),
+      warmup: warmLog ? encodeRunCode(warmLog) : null,
+    }
   }
 
   const send = async () => {
@@ -120,19 +132,14 @@ export function Leg() {
   }
 
   const copy = async () => {
+    const text = resultsText(payload())
+    setCopyText(text)
     try {
-      await navigator.clipboard.writeText(resultsText(payload()))
+      await navigator.clipboard.writeText(text)
       setCopied('ok')
     } catch {
       setCopied('failed')
     }
-  }
-
-  const another = () => {
-    legRef.current = newLeg()
-    setLeg(legRef.current)
-    setSent('idle')
-    setCopied('idle')
   }
 
   if (step === 'calibrate') {
@@ -180,6 +187,29 @@ export function Leg() {
     )
   }
 
+  const { leg } = flow
+  const overlayOpen = leg.won || showResults
+  const resultsActions = (
+    <>
+      <div class="row">
+        {FEEDBACK_URL && (
+          <button class="btn" data-testid="send-results" disabled={sent === 'sending' || sent === 'ok'} onClick={send}>Send my results</button>
+        )}
+        <button class="btn" data-testid="copy-results" onClick={copy}>Copy my results</button>
+      </div>
+      {sent === 'ok' && <p>Sent. Thank you!</p>}
+      {sent === 'failed' && <p>Could not send. Tap "Copy my results" and paste them to Sam.</p>}
+      {copied === 'ok' && <p>Copied.</p>}
+      {copied === 'failed' && (
+        <>
+          <p>Could not copy. Select this text and copy it by hand.</p>
+          <textarea readOnly rows={6} style={{ width: '100%', maxWidth: 420 }} value={copyText} onFocus={(e) => e.currentTarget.select()} />
+        </>
+      )}
+      <p class="muted">If you reload, tap Copy{FEEDBACK_URL ? '/Send' : ''} first: reloading loses the throw log.</p>
+    </>
+  )
+
   return (
     <div style={{ height: '100dvh' }}>
       <ThrowStage
@@ -197,33 +227,41 @@ export function Leg() {
         }
         onThrow={onThrow}
       />
-      {leg.won && (
+      {!overlayOpen && (
+        <button class="btn results-btn" data-testid="open-results" onClick={() => setShowResults(true)}>Results</button>
+      )}
+      {overlayOpen && (
         <div class="overlay">
-          <h2>Leg won in {leg.dartsTotal} darts</h2>
-          <p class="muted">{leg.dartsTotal <= DEFAULT_PAR ? `Par is ${DEFAULT_PAR}. You beat it.` : `Par is ${DEFAULT_PAR}. Beat it next leg.`}</p>
-          {ratingPending ? (
+          {leg.won ? (
             <>
-              <p>Did darts land where you aimed?</p>
-              <div class="row">
-                <button class="btn" data-testid="rating-mostly" onClick={() => rate('mostly')}>Mostly</button>
-                <button class="btn" data-testid="rating-sometimes" onClick={() => rate('sometimes')}>Sometimes</button>
-                <button class="btn" data-testid="rating-rarely" onClick={() => rate('rarely')}>Rarely</button>
-              </div>
+              <h2>Leg won in {leg.dartsTotal} darts</h2>
+              <p class="muted">{leg.dartsTotal <= DEFAULT_PAR ? `Par is ${DEFAULT_PAR}. You beat it.` : `Par is ${DEFAULT_PAR}. Beat it next leg.`}</p>
+              {flow.awaitingRating ? (
+                <>
+                  <p>Did darts land where you aimed?</p>
+                  <div class="row">
+                    <button class="btn" data-testid="rating-mostly" onClick={() => rate('mostly')}>Mostly</button>
+                    <button class="btn" data-testid="rating-sometimes" onClick={() => rate('sometimes')}>Sometimes</button>
+                    <button class="btn" data-testid="rating-rarely" onClick={() => rate('rarely')}>Rarely</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div class="row">
+                    <button class="btn primary wide" data-testid="another-leg" onClick={another}>Another leg</button>
+                  </div>
+                  {resultsActions}
+                </>
+              )}
             </>
           ) : (
-            <div class="row">
-              <button class="btn primary wide" data-testid="another-leg" onClick={another}>Another leg</button>
-              <button class="btn" data-testid="send-results" disabled={sent === 'sending' || sent === 'ok'} onClick={send}>Send my results</button>
-              <button class="btn" data-testid="copy-results" onClick={copy}>Copy my results</button>
-            </div>
-          )}
-          {sent === 'ok' && <p>Sent. Thank you!</p>}
-          {sent === 'failed' && <p>Could not send. Tap "Copy my results" and paste them to Sam.</p>}
-          {copied === 'ok' && <p>Copied.</p>}
-          {copied === 'failed' && (
             <>
-              <p>Could not copy. Select this text and copy it by hand.</p>
-              <textarea readOnly rows={6} style={{ width: '100%', maxWidth: 420 }} value={resultsText(payload())} />
+              <h2>Your results so far</h2>
+              <p class="muted">{leg.dartsTotal} {leg.dartsTotal === 1 ? 'dart' : 'darts'} in this leg, {flow.legs.filter((l) => l.visit === visit).length} finished.</p>
+              {resultsActions}
+              <div class="row">
+                <button class="btn primary" data-testid="close-results" onClick={() => setShowResults(false)}>Back to the leg</button>
+              </div>
             </>
           )}
         </div>
