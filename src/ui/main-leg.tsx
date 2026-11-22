@@ -1,2 +1,5 @@
 import { render } from 'preact'
-render(<p>Tungstrike</p>, document.getElementById('app')!)
+import './styles.css'
+import { Leg } from './Leg.tsx'
+
+render(<Leg />, document.getElementById('app')!)

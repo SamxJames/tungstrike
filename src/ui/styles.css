@@ -41,3 +41,5 @@ button { font: inherit; color: inherit; }
 .row .btn { flex: 1 1 auto; }
 .row .btn.wide { flex: 1 1 100%; }
 .btn:disabled { opacity: 0.45; }
+.hud-skip { position: fixed; top: 0; right: 8px; z-index: 3; height: 48px; display: flex; align-items: center; }
+.hud-skip .btn { min-height: 44px; padding: 0 14px; }
