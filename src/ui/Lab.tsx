@@ -3,9 +3,11 @@ import { bedCentre, makeBed } from '../core/board.ts'
 import { decodeSettings, DEFAULT_SETTINGS, encodeSettings } from '../core/settings.ts'
 import { encodeRunCode } from '../core/replay.ts'
 import type { Settings } from '../core/types.ts'
+import { snapLead } from './calibrate-math.ts'
 import { Calibrate } from './Calibrate.tsx'
 import { DrillReport } from './DrillReport.tsx'
 import type { DrillRecord } from './DrillReport.tsx'
+import { shareLink } from './share.ts'
 import { Slider } from './Slider.tsx'
 import { loadJson, loadLead, saveJson, saveLead } from './store.ts'
 import { ThrowStage } from './ThrowStage.tsx'
@@ -17,28 +19,34 @@ const TALLY_MAX = 30
 const newSeed = () => crypto.getRandomValues(new Uint32Array(1))[0]
 
 type Tally = { t20: boolean }[]
+interface Drill { id: number; seed: number; settings: Settings }
 
 export function Lab() {
   const [settings, setSettings] = useState<Settings>(() => ({
     ...decodeSettings(location.hash),
     leadMs: loadLead() ?? DEFAULT_SETTINGS.leadMs,
   }))
-  const [drill, setDrill] = useState<{ id: number; seed: number } | null>(null)
+  // A drill is pinned to the settings in force when it started, so its report and run code stay true.
+  const [drill, setDrill] = useState<Drill | null>(null)
   const [records, setRecords] = useState<DrillRecord[]>([])
   const [done, setDone] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
   const [calibrating, setCalibrating] = useState(false)
   const [tally, setTally] = useState<Tally>(() => loadJson<Tally>(TALLY_KEY, []))
+  const [shareNote, setShareNote] = useState<string | null>(null)
   const [freeSeed] = useState(newSeed)
   const recordsRef = useRef<DrillRecord[]>([])
   const tallyRef = useRef(tally)
   tallyRef.current = tally
+  const noteTimer = useRef(0)
 
   // Keep the share link in the address bar. Lead is deliberately left out (it lives in localStorage).
   useEffect(() => {
     const id = window.setTimeout(() => history.replaceState(null, '', encodeSettings(settings)), 300)
     return () => window.clearTimeout(id)
   }, [settings])
+
+  useEffect(() => () => window.clearTimeout(noteTimer.current), [])
 
   const set = (key: keyof Settings) => (v: number) => {
     setSettings((s) => ({ ...s, [key]: v }))
@@ -50,10 +58,11 @@ export function Lab() {
     setRecords([])
     setDone(false)
     setReportOpen(false)
-    setDrill({ id: Date.now(), seed: newSeed() })
+    setDrill({ id: Date.now(), seed: newSeed(), settings })
   }
 
   const onDrillThrow = (rec: DrillRecord) => {
+    if (recordsRef.current.length >= DRILL_DARTS) return
     const next = [...recordsRef.current, rec]
     recordsRef.current = next
     setRecords(next)
@@ -67,32 +76,45 @@ export function Lab() {
     }
   }
 
+  // After a finished drill the link carries the drill's own settings and its run code; otherwise the live settings.
+  const finished = drill !== null && done
+  const linkSettings = finished ? drill.settings : settings
   const shareUrl =
     location.origin +
     '/lab' +
-    encodeSettings(settings) +
-    (drill && done ? '&run=' + encodeRunCode({ v: 1, seed: drill.seed, settings, throws: records.map((r) => r.input) }) : '')
+    encodeSettings(linkSettings) +
+    (finished ? '&run=' + encodeRunCode({ v: 1, seed: drill.seed, settings: drill.settings, throws: records.map((r) => r.input) }) : '')
+
+  const share = async () => {
+    const result = await shareLink(shareUrl)
+    window.clearTimeout(noteTimer.current)
+    setShareNote(result === 'copied' ? 'Copied' : result === 'failed' ? 'Could not share or copy' : null)
+    if (result !== 'shared') noteTimer.current = window.setTimeout(() => setShareNote(null), 2000)
+  }
+
+  const drillActive = drill !== null && !done
 
   return (
     <div>
       {calibrating && (
         <Calibrate
           onDone={(ms) => {
-            set('leadMs')(ms)
+            set('leadMs')(snapLead(ms))
             setCalibrating(false)
           }}
           onSkip={() => setCalibrating(false)}
         />
       )}
-      {done && reportOpen && (
+      {finished && reportOpen && (
         <div class="sheet">
           <div class="sheet-inner">
             <DrillReport
               records={records}
-              settings={settings}
+              settings={drill.settings}
               tally={{ n: tally.length, t20: tally.filter((t) => t.t20).length }}
-              shareUrl={shareUrl}
-              onApplyLead={(ms) => set('leadMs')(ms)}
+              onShare={share}
+              shareNote={shareNote}
+              onApplyLead={(ms) => set('leadMs')(snapLead(ms))}
             />
             <button class="btn primary close" data-testid="close-report" onClick={() => setReportOpen(false)}>
               Back to the Lab
@@ -103,15 +125,15 @@ export function Lab() {
       <div class="lab-stage">
         <ThrowStage
           key={drill?.id ?? 'free'}
-          settings={settings}
+          settings={drillActive ? drill.settings : settings}
           seed={drill?.seed ?? freeSeed}
           initialTarget={T20}
           fixedTarget={drill !== null}
           boardFlex={8}
           padFlex={3}
-          hud={drill && !done ? <span>Drill {records.length}/{DRILL_DARTS} at T20</span> : <span>Lab</span>}
+          hud={drillActive ? <span>Drill {records.length}/{DRILL_DARTS} at T20 · locked</span> : <span>Lab</span>}
           onThrow={(e) => {
-            if (drill && !done) {
+            if (drillActive) {
               onDrillThrow({
                 dart: { crosshair: e.result.crosshair, landing: e.result.landing, bed: e.result.bed },
                 ctx: e.ctx,
@@ -127,15 +149,25 @@ export function Lab() {
           <button class="btn primary" data-testid="start-drill" onClick={startDrill}>
             10 darts at T20
           </button>
-          <button class="btn" onClick={() => setCalibrating(true)}>
+          <button class="btn" data-testid="timing-check" onClick={() => setCalibrating(true)}>
             Timing check
           </button>
-          <a class="btn" data-testid="play-leg" href={'/' + encodeSettings(settings)}>
+          <button class="btn" data-testid="share-link" onClick={share}>
+            Share link
+          </button>
+        </div>
+        {shareNote !== null && !reportOpen && (
+          <p class="muted" role="status" style={{ textAlign: 'center', margin: '6px 0 0' }}>
+            {shareNote}
+          </p>
+        )}
+        <div class="row" style={{ marginTop: '8px' }}>
+          <a class="btn primary wide" data-testid="play-leg" href={'/' + encodeSettings(settings)}>
             Play a leg with these settings
           </a>
         </div>
-        {done && !reportOpen && (
-          <button class="btn" data-testid="show-report" style={{ width: '100%', marginTop: '8px' }} onClick={() => setReportOpen(true)}>
+        {finished && !reportOpen && (
+          <button class="btn wide" data-testid="show-report" style={{ marginTop: '8px' }} onClick={() => setReportOpen(true)}>
             Show drill report
           </button>
         )}
