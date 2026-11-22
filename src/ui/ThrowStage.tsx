@@ -6,6 +6,7 @@ import type { Point, Settings, ThrowCtx, ThrowInput, ThrowResult } from '../core
 import { drawBoard } from '../render/board.ts'
 import { drawAim, drawDart, drawGhost, drawTargetMarker } from '../render/overlay.ts'
 import { makeView, toBoard } from '../render/view.ts'
+import { GHOST_MS, flightProgress, shouldReport } from './landing.ts'
 import { AimSession } from './session.ts'
 
 export interface ThrowEvent { index: number; input: ThrowInput; ctx: ThrowCtx; result: ThrowResult }
@@ -21,9 +22,6 @@ export interface ThrowStageProps {
 }
 
 interface Landed { event: ThrowEvent; releasedAt: number; reported: boolean }
-
-const GHOST_MS = 300
-const FLY_MS = 150
 
 export function ThrowStage(props: ThrowStageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -71,6 +69,15 @@ export function ThrowStage(props: ThrowStageProps) {
       drawBoard(ctx2d, view)
       drawTargetMarker(ctx2d, view, session.target)
       const landed = landedRef.current
+      // Report first, independent of the draw branch, so a dropped frame window can never lose a throw.
+      if (landed !== null && shouldReport(landed, now, session.phase)) {
+        landed.reported = true
+        const r = landed.event.result
+        setChip(`${bedLabel(r.bed)} · ${r.bed.score}`)
+        window.clearTimeout(chipTimer)
+        chipTimer = window.setTimeout(() => setChip(null), 600)
+        p.onThrow(landed.event)
+      }
       if (session.phase === 'aiming' || landed === null) {
         const ctx: ThrowCtx = { seed: p.seed, throwIndex: session.throwIndex, settings: p.settings, target: session.target }
         drawAim(ctx2d, view, crosshairAt(ctx, session.tick(now)), capUnits)
@@ -78,14 +85,7 @@ export function ThrowStage(props: ThrowStageProps) {
         const dt = now - landed.releasedAt
         const r = landed.event.result
         drawGhost(ctx2d, view, r.crosshair, capUnits)
-        if (dt >= GHOST_MS) drawDart(ctx2d, view, r.crosshair, r.landing, Math.min(1, (dt - GHOST_MS) / FLY_MS))
-        if (!landed.reported && dt >= GHOST_MS + FLY_MS) {
-          landed.reported = true
-          setChip(`${bedLabel(r.bed)} · ${r.bed.score}`)
-          window.clearTimeout(chipTimer)
-          chipTimer = window.setTimeout(() => setChip(null), 600)
-          p.onThrow(landed.event)
-        }
+        if (dt >= GHOST_MS) drawDart(ctx2d, view, r.crosshair, r.landing, flightProgress(dt))
       }
       raf = requestAnimationFrame(frame)
     }
