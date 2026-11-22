@@ -17,6 +17,7 @@ export default defineConfig({
       name: 'mobile-chromium',
       use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 },
     },
-    { name: 'mobile-webkit', use: { ...devices['iPhone 13'] } },
+    // The iPhone 13 descriptor is 390x664; Tungstrike is designed at 390x844, so keep its UA/touch settings but fix the viewport.
+    { name: 'mobile-webkit', use: { ...devices['iPhone 13'], viewport: { width: 390, height: 844 } } },
   ],
 })
