@@ -36,6 +36,12 @@ Use `superpowers:systematic-debugging` for any bug: reproduce with a seed + inpu
 ## Where work lives
 - **GitHub Issues are the backlog**, not long lists in docs. Labels: `milestone:M0` etc., `agent-ready` (Claude can do
   it alone), `waiting-on-sam` (needs his decision or hands), `in-progress`, `bug`. Sam triages from his phone.
+- **The shipyard board** (user plugin) reads these same labels; the mapping is in `.github/shipyard.json`. `/status`
+  shows what's in progress, in review, waiting on Sam and merged-but-not-live, and it beats handover for current
+  state. Move issues with the board script (`board.mjs move <n> ready|in-progress|in-review`) so labels stay consistent.
+  PRs say `Closes #<n>`. `"autoMerge": false` keeps the gates above: Sam still approves specs and plans and merges every PR.
+- **Production:** Vercel reports to GitHub Deployments as `Production` once the project is connected. The release-manager
+  runs `board.mjs live` after a merge, so `live` means the closing commit is really in production.
 - `docs/handover.md` is short (under 150 lines): status, open threads, waiting on Sam, a short session log. Detail lives in
   specs, plans, PRs and issues. Load only what the task needs: don't read every doc every session.
 - `docs/decisions.md` holds decisions that are in force, with the reason. Check it before re-opening a settled question.

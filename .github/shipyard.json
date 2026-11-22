@@ -1,0 +1,12 @@
+{
+  "labels": {
+    "ready": "agent-ready",
+    "in-progress": "in-progress",
+    "needs-sam": "waiting-on-sam"
+  },
+  "autoMerge": false,
+  "deploy": {
+    "environment": "Production"
+  },
+  "check": "npm run check"
+}
