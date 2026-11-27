@@ -4,7 +4,9 @@ import { execFileSync, spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { DEFAULT_SETTINGS } from '../src/core/settings.ts'
-import { encodeRunCode } from '../src/core/replay.ts'
+import { bedCentre, makeBed } from '../src/core/board.ts'
+import { summariseRun } from '../src/core/analysis.ts'
+import { decodeRunCode, encodeRunCode } from '../src/core/replay.ts'
 import { resultsText } from '../src/ui/feedback.ts'
 import type { LegRecord, ResultsPayload } from '../src/ui/feedback.ts'
 import { analyse } from './analyse-runs.mjs'
@@ -126,6 +128,101 @@ describe('analyse', () => {
     expect(analyse('')).toEqual([])
     expect(analyse('  \n\n \r\n')).toEqual([])
     expect(analyse('Device: x\nVisit: y\nLeg 1: a b c\nWarm-up code: ABC\nNo legs finished yet')).toEqual([])
+  })
+})
+
+/** A run code with `n` darts, all aimed at the treble 20 with no scatter (every miss is a timing miss). */
+const t20Code = (n: number, seed = 5) =>
+  encodeRunCode({
+    v: 1,
+    seed,
+    settings: { ...DEFAULT_SETTINGS, scatterCap: 0 },
+    throws: Array.from({ length: n }, (_, i) => ({ target: bedCentre(makeBed('treble', 20)), releaseTick: (i * 3) % 150 })),
+  })
+
+describe('analyse: the same visit copied more than once', () => {
+  // Copies are cumulative: each later copy of a visit holds every earlier dart plus more.
+  const copy1 = resultsText(payload({ run: t20Code(20), legs: [leg({ darts: 11 })] }))
+  const copy2 = resultsText(payload({ run: t20Code(40), legs: [leg({ darts: 11 }), leg({ darts: 15, startThrow: 11 })] }))
+  const copy3 = resultsText(payload({ run: t20Code(60), legs: [leg({ darts: 11 }), leg({ darts: 15, startThrow: 11 }), leg({ darts: 34, won: false, startThrow: 26 })] }))
+  const runLines = (lines: string[]) => lines.filter((l) => /^run \d+:/.test(l))
+
+  it('analyses only the last copy of a visit, so legs and darts are not counted twice, and says what it dropped', () => {
+    const lines = analyse([copy1, copy2, copy3].join('\n\n'))
+    expect(runLines(lines)).toHaveLength(1)
+    expect(runLines(lines)[0]).toContain('throws 60')
+    expect(lines.filter((l) => /^run 1 leg \d+:/.test(l))).toEqual([
+      'run 1 leg 1: 11 darts, won, landed where aimed: mostly',
+      'run 1 leg 2: 15 darts, won, landed where aimed: mostly',
+      'run 1 leg 3: 34 darts, not finished, landed where aimed: mostly',
+    ])
+    expect(lines).toContain('dropped 2 earlier copies of visit visit9')
+  })
+  it('says copy, not copies, for one dropped copy, and does not mention drops when there are none', () => {
+    expect(analyse([copy1, copy2].join('\n'))).toContain('dropped 1 earlier copy of visit visit9')
+    expect(analyse(copy3).some((l) => l.startsWith('dropped'))).toBe(false)
+  })
+  it('keeps different visits apart, and de-duplicates earlier-visit blocks too', () => {
+    const early = (run: string) => ({ visit: 'old1', startedAt: 0, run, warmup: null, legs: [leg({ visit: 'old1', darts: 40 })] })
+    const first = resultsText(payload({ run: t20Code(20), earlier: [early(t20Code(5, 8))] }))
+    const second = resultsText(payload({ run: t20Code(40), earlier: [early(t20Code(9, 8))] }))
+    const other = resultsText(payload({ visit: 'visit8', run: t20Code(7, 9) }))
+    const lines = analyse([first, other, second].join('\n'))
+    expect(runLines(lines)).toEqual([
+      expect.stringContaining('run 1: throws 7,'),
+      expect.stringContaining('run 2: throws 40,'),
+      expect.stringContaining('run 3: throws 9,'),
+    ])
+    expect(lines).toContain('dropped 1 earlier copy of visit visit9')
+    expect(lines).toContain('dropped 1 earlier copy of visit old1')
+    expect(lines.some((l) => l.includes('visit8') && l.startsWith('dropped'))).toBe(false)
+    expect(lines.filter((l) => /^run 3 leg/.test(l))).toEqual(['run 3 leg 1: 40 darts, won, landed where aimed: mostly'])
+  })
+  it('never drops a bare code or share link, even when the same code is pasted twice', () => {
+    expect(runLines(analyse(`${code}\n${code}`))).toHaveLength(2)
+  })
+})
+
+describe('analyse: what each run line reports', () => {
+  const runLine = (text: string) => analyse(text).find((l) => l.startsWith('run 1:'))!
+
+  it('prints the timing share, T20 rate, in-20 and near-20 rates and the three-dart average', () => {
+    const s = summariseRun(decodeRunCode(t20Code(90)))
+    const pct = (v: number | null) => (v === null ? 'n/a' : `${(v * 100).toFixed(0)}%`)
+    const line = runLine(t20Code(90))
+    expect(line).toContain(`timing ${pct(s.timingMissShare)} of ${s.misses} misses`)
+    expect(line).toContain(`T20 ${pct(s.t20Rate)} of ${s.aimedAtT20} aimed`)
+    expect(line).toContain(`in 20 ${pct(s.in20Rate)}`)
+    expect(line).toContain(`near 20 ${pct(s.near20Rate)}`)
+    expect(line).toContain(`3-dart avg ${s.threeDartAverage === null ? 'n/a' : s.threeDartAverage.toFixed(1)} over ${s.turns} turns`)
+    expect(line).toContain('timing 100% of')
+  })
+  it('says n/a rather than NaN when there is nothing to measure', () => {
+    const line = runLine(encodeRunCode({ v: 1, seed: 1, settings: DEFAULT_SETTINGS, throws: [] }))
+    expect(line).toContain('timing n/a of 0 misses')
+    expect(line).toContain('T20 n/a of 0 aimed')
+    expect(line).toContain('3-dart avg n/a over 0 turns')
+    expect(line).not.toContain('NaN')
+  })
+  it('echoes a log gap on the run line of the visit it belongs to, current or earlier', () => {
+    const text = resultsText(
+      payload({
+        logGap: true,
+        earlier: [
+          { visit: 'old1', startedAt: 0, run: code, warmup: null, legs: [], logGap: true },
+          { visit: 'old2', startedAt: 0, run: code, warmup: null, legs: [] },
+        ],
+      }),
+    )
+    const runs = analyse(text).filter((l) => /^run \d+:/.test(l))
+    expect(runs).toHaveLength(3)
+    expect(runs[0]).toContain('log gap detected')
+    expect(runs[1]).toContain('log gap detected')
+    expect(runs[2]).not.toContain('log gap')
+  })
+  it('still understands the gap line an earlier build printed', () => {
+    const text = resultsText(payload({})).replace('Device: Pixel 8, Chrome', 'Device: Pixel 8, Chrome\nThrow log has a gap: this run code may not replay every dart.')
+    expect(runLine(text)).toContain('log gap detected')
   })
 })
 
