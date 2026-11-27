@@ -2,6 +2,22 @@
 
 Newest first. Each entry: date · decision · why · what would change it.
 
+- **2026-11-27 · Visits are kept on the phone until they are sent.** After every dart, rating and "Another leg", the leg
+  screen saves this visit's throw logs (seed, frozen settings, every dart's target and release time, the warm-up darts)
+  to `localStorage` (`ts.visits.v1`, last 5 visits); ratings stay in `ts.legs.v1`. On the next load, visits never sent go
+  out with the next Send or Copy, each as its own entry, and are then marked sent. Nothing leaves the phone except by
+  Send/Copy. Why: a reload or a discarded background tab used to lose the throw log and strand the ratings, and Gate 1
+  needs both. Private tabs cannot store anything, so the results panel says so. Change if: testers report confusing
+  repeats, or a backend replaces the form.
+- **2026-11-27 · No offscreen board cache.** The board is redrawn every frame. Evidence: the mobile playtest measured
+  median and p95 frame time of 16.7ms at 4x and 6x CPU throttle, with about 1ms of script per frame. Change if: a real
+  tester reports stutter, or a frame profile on a real low-end phone shows the board draw over about 8ms.
+- **2026-11-27 · 600ms post-throw lockout.** After a release the next dart starts 600ms later (taps on the pad are
+  ignored; a board tap is kept and applied when the next dart starts). Why: the dart lands 450ms after release (300ms
+  ghost plus 150ms flight), and the extra 150ms lets the player see the landing; the spec said "about 400ms", which would
+  start the next wobble before the dart lands. Change if: testers find the rhythm sluggish (try 500ms) or the landing
+  hard to read.
+
 - **2026-11-16 · Gate 1 wording A (Sam).** Testers are told "play as many as you like"; we count legs, and 10 or more is the bar
   for "at least 10 legs". "Starts another leg without being asked" is then measured honestly. Why: telling them to play 10
   would hide whether they'd want to. Change only before the gate is read.

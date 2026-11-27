@@ -174,6 +174,11 @@ export function Lab() {
             Show drill report
           </button>
         )}
+        {drillActive && (
+          <p class="muted" data-testid="settings-after-drill" style={{ margin: '10px 0 0' }}>
+            Settings apply after this drill.
+          </p>
+        )}
         <Slider id="wobbleRadius" label="Wobble size" min={10} max={40} step={1} value={settings.wobbleRadius} reset={DEFAULT_SETTINGS.wobbleRadius} display={(v) => `${(v / 10).toFixed(1)} treble widths`} onChange={set('wobbleRadius')} />
         <Slider id="loopMs" label="Wobble speed (time per lap)" min={800} max={2500} step={50} value={settings.loopMs} reset={DEFAULT_SETTINGS.loopMs} display={(v) => `${(v / 1000).toFixed(2)} s`} onChange={set('loopMs')} />
         <Slider id="shape" label="Wobble shape (0 circle, 100 figure-8)" min={0} max={100} step={5} value={settings.shape} reset={DEFAULT_SETTINGS.shape} display={(v) => `${v}`} onChange={set('shape')} />

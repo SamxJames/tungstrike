@@ -57,7 +57,7 @@ describe('analyse', () => {
       }),
     )
     const lines = analyse(text)
-    const runLines = lines.filter((l) => l.startsWith('run '))
+    const runLines = lines.filter((l) => /^run \d+:/.test(l))
     expect(runLines).toHaveLength(1)
     expect(runLines[0]).toContain('throws 60')
     expect(lines.some((l) => l.includes('not a valid run code'))).toBe(false)
@@ -74,13 +74,35 @@ describe('analyse', () => {
     const lines = analyse(text)
     expect(lines).toHaveLength(3)
     expect(lines[0]).toContain('throws 60')
-    expect(lines[1]).toBe('leg 1: 21 darts, won, landed where aimed: mostly')
-    expect(lines[2]).toBe('leg 3: 21 darts, not finished, landed where aimed: rarely')
+    expect(lines[1]).toBe('run 1 leg 1: 21 darts, won, landed where aimed: mostly')
+    expect(lines[2]).toBe('run 1 leg 3: 21 darts, not finished, landed where aimed: rarely')
+  })
+
+  it('lists each visit’s rated legs right after that visit’s run, in a multi-visit message', () => {
+    const code2 = encodeRunCode({ v: 1, seed: 4, settings: DEFAULT_SETTINGS, throws: [{ target: { x: 0, y: 0 }, releaseTick: 3 }] })
+    const text = resultsText(
+      payload({
+        legs: [leg({ rating: 'mostly' })],
+        earlier: [{ visit: 'old1', startedAt: 0, run: code2, warmup: null, legs: [leg({ visit: 'old1', rating: 'rarely', darts: 40 })] }],
+      }),
+    )
+    expect(analyse(text)).toEqual([
+      expect.stringContaining('run 1: throws 60'),
+      'run 1 leg 1: 21 darts, won, landed where aimed: mostly',
+      expect.stringContaining('run 2: throws 1'),
+      'run 2 leg 1: 40 darts, won, landed where aimed: rarely',
+    ])
+  })
+
+  it('finds the run code in a pasted share link', () => {
+    const lines = analyse(`https://example.app/lab#v1&rad=25&loop=1600&run=${code}\nsee ${'https://x.app/lab?run=' + code}&zm=200`)
+    expect(lines.filter((l) => /^run \d+:/.test(l))).toHaveLength(2)
+    expect(lines[0]).toContain('throws 60')
   })
 
   it('handles several pasted messages and bare codes together', () => {
     const lines = analyse(`${resultsText(payload({}))}\n\n${code}\n`)
-    expect(lines.filter((l) => l.startsWith('run '))).toHaveLength(2)
+    expect(lines.filter((l) => /^run \d+:/.test(l))).toHaveLength(2)
     expect(lines[1]).toContain('run 2:')
   })
 
@@ -97,7 +119,7 @@ describe('analyse', () => {
 
   it('accepts a code with surrounding whitespace and CRLF line endings', () => {
     const lines = analyse(`  ${code}  \r\nRun code: ${code}\r\n`)
-    expect(lines.filter((l) => l.startsWith('run '))).toHaveLength(2)
+    expect(lines.filter((l) => /^run \d+:/.test(l))).toHaveLength(2)
   })
 
   it('returns nothing for empty or prose-only input', () => {
@@ -114,6 +136,7 @@ describe('analyse-runs CLI', () => {
     const r = spawnSync(process.execPath, [script], { encoding: 'utf8' })
     expect(r.status).toBe(1)
     expect(r.stderr).toContain('Usage')
+    expect(r.stderr).toContain('Node 22.18')
   })
 
   it('analyses a file', () => {
