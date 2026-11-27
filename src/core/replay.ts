@@ -50,7 +50,7 @@ export function encodeRunCode(log: RunLog): string {
   return btoa(JSON.stringify(log)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
-const MAX_THROWS = 5000
+export const MAX_THROWS = 5000
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
 const isInt = (v: unknown): v is number => isNum(v) && Number.isInteger(v)
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)

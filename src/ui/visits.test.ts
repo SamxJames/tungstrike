@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { decodeRunCode } from '../core/replay.ts'
+import { decodeRunCode, MAX_THROWS } from '../core/replay.ts'
 import { DEFAULT_SETTINGS } from '../core/settings.ts'
 import type { LegRecord } from './feedback.ts'
 import { earlierEntries, loadUnsentVisits, markSent, MAX_VISITS, saveVisit, VISITS_KEY } from './visits.ts'
@@ -52,6 +52,16 @@ describe('saveVisit / loadUnsentVisits', () => {
     const s = memory()
     for (let i = 1; i <= MAX_VISITS + 2; i++) saveVisit(rec(`v${i}`, { startedAt: i }), s)
     expect(loadUnsentVisits('z', s).map((v) => v.visit)).toEqual(['v3', 'v4', 'v5', 'v6', 'v7'])
+  })
+  it('never stores more throws than the decoder accepts, so a long visit still loads after a reload', () => {
+    const s = memory()
+    const long = Array.from({ length: MAX_THROWS + 25 }, (_, i) => dart(i % 150))
+    saveVisit(rec('long', { inputs: long, warmInputs: long }), s)
+    const loaded = loadUnsentVisits('z', s)
+    expect(loaded).toHaveLength(1)
+    expect(loaded[0].inputs).toHaveLength(MAX_THROWS)
+    expect(loaded[0].warmInputs).toHaveLength(MAX_THROWS)
+    expect(loaded[0].inputs).toEqual(long.slice(0, MAX_THROWS))
   })
   it('skips sent visits, visits with no darts, and malformed entries', () => {
     const s = memory()

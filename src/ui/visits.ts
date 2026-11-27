@@ -1,4 +1,4 @@
-import { decodeRunCode, encodeRunCode } from '../core/replay.ts'
+import { decodeRunCode, encodeRunCode, MAX_THROWS } from '../core/replay.ts'
 import { DEFAULT_SETTINGS } from '../core/settings.ts'
 import type { RunLog, Settings, ThrowInput } from '../core/types.ts'
 import type { LegRecord } from './feedback.ts'
@@ -70,8 +70,14 @@ function readAll(storage: Storage | undefined): VisitRecord[] {
 }
 
 /** Save (or replace) one visit, keeping the last MAX_VISITS. Returns false, never throws, when storage fails. */
-export function saveVisit(record: VisitRecord, storage?: Storage): boolean {
+export function saveVisit(input: VisitRecord, storage?: Storage): boolean {
   const s = storage ?? defaultStorage()
+  // The decoder rejects logs over MAX_THROWS, so never store more: a prefix of a log is itself a valid, replayable log.
+  const record: VisitRecord = {
+    ...input,
+    inputs: input.inputs.slice(0, MAX_THROWS),
+    warmInputs: input.warmInputs.slice(0, MAX_THROWS),
+  }
   const all = readAll(s)
   const at = all.findIndex((v) => v.visit === record.visit)
   if (at >= 0) all[at] = record
