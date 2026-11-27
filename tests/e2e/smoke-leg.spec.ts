@@ -194,6 +194,11 @@ test('leg: landscape 844x390 keeps the timing track visible and every overlay bu
   await page.goto(EASY)
   expect((await page.getByTestId('calibrate-track').boundingBox())!.height).toBeGreaterThanOrEqual(12)
   await startLeg(page)
+  // The pad stays a comfortable target in landscape, and neither it nor the board hands gestures to the browser.
+  const pad = page.getByTestId('release-pad')
+  expect((await pad.boundingBox())!.height).toBeGreaterThanOrEqual(44)
+  expect(await pad.evaluate((el) => getComputedStyle(el).touchAction)).toBe('none')
+  expect(await page.getByTestId('board').evaluate((el) => getComputedStyle(el).touchAction)).toBe('none')
   await throwDarts(page, 1)
   await page.getByTestId('open-results').click()
   await page.getByTestId('copy-results').click()

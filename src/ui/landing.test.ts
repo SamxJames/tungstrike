@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { FLY_MS, GHOST_MS, flightProgress, shouldReport } from './landing.ts'
+import { FLY_MS, GHOST_MS, flightProgress, reportSafely, shouldReport } from './landing.ts'
 
 const landed = (reported = false) => ({ releasedAt: 1000, reported })
 
@@ -21,6 +21,21 @@ describe('shouldReport', () => {
   it('is false when nothing has landed', () => {
     expect(shouldReport(null, 2000, 'aiming')).toBe(false)
     expect(shouldReport(null, 2000, 'cooldown')).toBe(false)
+  })
+})
+
+describe('reportSafely', () => {
+  it('passes the event on and reports success', () => {
+    const seen: number[] = []
+    expect(reportSafely((n: number) => seen.push(n), 7, () => {})).toBe(true)
+    expect(seen).toEqual([7])
+  })
+  it('catches an exception from the game, logs it and reports failure, so the frame loop keeps running', () => {
+    const logged: unknown[] = []
+    const boom = new Error('boom')
+    expect(() => reportSafely(() => { throw boom }, 1, (...a: unknown[]) => logged.push(...a))).not.toThrow()
+    expect(reportSafely(() => { throw boom }, 1, (...a: unknown[]) => logged.push(...a))).toBe(false)
+    expect(logged).toContain(boom)
   })
 })
 

@@ -14,6 +14,7 @@ function ring(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number, 
 }
 
 export function drawBoard(ctx: CanvasRenderingContext2D, view: View): void {
+  ctx.save()
   const s = view.scale
   const c = toPx(view, { x: 0, y: 0 })
   ctx.fillStyle = '#0b0d10'
@@ -42,20 +43,22 @@ export function drawBoard(ctx: CanvasRenderingContext2D, view: View): void {
   ctx.arc(c.px, c.py, BOARD.bullInner * s, 0, Math.PI * 2)
   ctx.fill()
 
+  // Wires: the 6 ring lines in one path, the 20 spokes in another (each sub-path starts with moveTo, so no joins).
   ctx.strokeStyle = 'rgba(200,200,200,0.55)'
   ctx.lineWidth = 1
+  ctx.beginPath()
   for (const r of [BOARD.bullInner, BOARD.bullOuter, BOARD.trebleInner, BOARD.trebleOuter, BOARD.doubleInner, BOARD.doubleOuter]) {
-    ctx.beginPath()
+    ctx.moveTo(c.px + r * s, c.py)
     ctx.arc(c.px, c.py, r * s, 0, Math.PI * 2)
-    ctx.stroke()
   }
+  ctx.stroke()
+  ctx.beginPath()
   for (let k = 0; k < 20; k++) {
     const a = (-9 + 18 * k - 90) * DEG
-    ctx.beginPath()
     ctx.moveTo(c.px + Math.cos(a) * BOARD.bullOuter * s, c.py + Math.sin(a) * BOARD.bullOuter * s)
     ctx.lineTo(c.px + Math.cos(a) * BOARD.doubleOuter * s, c.py + Math.sin(a) * BOARD.doubleOuter * s)
-    ctx.stroke()
   }
+  ctx.stroke()
 
   ctx.fillStyle = '#d8d8d8'
   ctx.textAlign = 'center'
@@ -65,4 +68,5 @@ export function drawBoard(ctx: CanvasRenderingContext2D, view: View): void {
     const a = (18 * k - 90) * DEG
     ctx.fillText(String(SECTOR_NUMBERS[k]), c.px + Math.cos(a) * 1800 * s, c.py + Math.sin(a) * 1800 * s)
   }
+  ctx.restore()
 }

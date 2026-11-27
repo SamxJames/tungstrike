@@ -23,6 +23,19 @@ describe('view', () => {
     const b = makeView(390, 500, { x: 0, y: 0 }, 200)
     expect(b.scale).toBeCloseTo(a.scale * 2)
   })
+  it('fits the whole board, numbers margin included, in a landscape canvas (height is the smaller side)', () => {
+    const v = makeView(500, 390, { x: 0, y: 0 }, 100)
+    expect(toPx(v, { x: 0, y: 1900 }).py).toBeGreaterThanOrEqual(0)
+    expect(toPx(v, { x: 0, y: -1900 }).py).toBeLessThanOrEqual(390)
+    expect(toPx(v, { x: 1900, y: 0 }).px).toBeLessThanOrEqual(500)
+    expect(toPx(v, { x: -1900, y: 0 }).px).toBeGreaterThanOrEqual(0)
+  })
+  it('toBoard never returns -0', () => {
+    const v = makeView(390, 500, { x: 0, y: 0 }, 350)
+    const p = toBoard(v, 195 - 0.01, 250 + 0.01) // a hair left of and below the centre rounds to -0 without normalising
+    expect(Object.is(p.x, 0)).toBe(true)
+    expect(Object.is(p.y, 0)).toBe(true)
+  })
   it('fits the whole board at 100 percent', () => {
     const v = makeView(390, 500, { x: 0, y: 0 }, 100)
     expect(toPx(v, { x: 1700, y: 0 }).px).toBeLessThan(390)

@@ -1,6 +1,7 @@
 import { bedCentre, makeBed } from '../core/board.ts'
 import { bestLead } from '../core/lead.ts'
 import { summariseDrill } from '../core/drill.ts'
+import { scatterCapUnits } from '../core/throw.ts'
 import type { Settings, ThrowCtx, ThrowInput } from '../core/types.ts'
 import type { DrillDart } from '../core/drill.ts'
 import { leadAdvice } from './calibrate-math.ts'
@@ -34,7 +35,7 @@ export function DrillReport(props: {
   )
   const counts = Object.entries(s.counts).map(([k, v]) => `${k} x${v}`).join(', ')
   const sign = suggestion.leadMs >= 0 ? '+' : ''
-  const ring = props.settings.scatterCap * 8
+  const ring = scatterCapUnits(props.settings)
 
   // Fit every aim circle (crosshair + scatter ring) around T20, with a sensible minimum window.
   let xHalf = 250

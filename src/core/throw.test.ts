@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { DEFAULT_SETTINGS } from './settings.ts'
 import { UNITS_PER_TREBLE_WIDTH } from './constants.ts'
-import { crosshairAt, releaseTickFor, resolveThrow, scatterFor } from './throw.ts'
+import { crosshairAt, releaseTickFor, resolveThrow, scatterCapUnits, scatterFor } from './throw.ts'
 import type { ThrowCtx } from './types.ts'
 
 const ctx = (over: Partial<ThrowCtx> = {}, settings = DEFAULT_SETTINGS): ThrowCtx => ({
@@ -48,6 +48,14 @@ describe('crosshairAt', () => {
       maxEightY = Math.max(maxEightY, Math.abs(crosshairAt(ctx({}, eight), t).y - 1030))
     }
     expect(maxCircleY).toBeGreaterThan(maxEightY * 1.6)
+  })
+})
+
+describe('scatterCapUnits', () => {
+  it('is the scatter ring radius in board units (tenths of a treble width)', () => {
+    expect(scatterCapUnits({ ...DEFAULT_SETTINGS, scatterCap: 10 })).toBe(UNITS_PER_TREBLE_WIDTH)
+    expect(scatterCapUnits({ ...DEFAULT_SETTINGS, scatterCap: 0 })).toBe(0)
+    expect(scatterCapUnits({ ...DEFAULT_SETTINGS, scatterCap: 7 })).toBe(56)
   })
 })
 

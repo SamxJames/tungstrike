@@ -23,13 +23,17 @@ function ringAt(ctx: CanvasRenderingContext2D, view: View, p: Point, capUnits: n
 export function drawTargetMarker(ctx: CanvasRenderingContext2D, view: View, target: Point): void {
   const c = toPx(view, target)
   ctx.save()
-  ctx.strokeStyle = 'rgba(255,255,255,0.8)'
-  ctx.lineWidth = 1
   ctx.beginPath()
   ctx.moveTo(c.px - 5, c.py)
   ctx.lineTo(c.px + 5, c.py)
   ctx.moveTo(c.px, c.py - 5)
   ctx.lineTo(c.px, c.py + 5)
+  // Dark underlay first so the marker reads on the cream beds too (same pattern as the aim ring).
+  ctx.strokeStyle = '#000000'
+  ctx.lineWidth = 3
+  ctx.stroke()
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)'
+  ctx.lineWidth = 1
   ctx.stroke()
   ctx.restore()
 }
@@ -70,11 +74,14 @@ export function drawDart(ctx: CanvasRenderingContext2D, view: View, from: Point,
   const x = a.px + (b.px - a.px) * t
   const y = a.py + (b.py - a.py) * t
   ctx.save()
-  ctx.strokeStyle = 'rgba(255,255,255,0.8)'
-  ctx.lineWidth = 1
   ctx.beginPath()
   ctx.moveTo(a.px, a.py)
   ctx.lineTo(b.px, b.py)
+  ctx.strokeStyle = '#000000'
+  ctx.lineWidth = 3
+  ctx.stroke()
+  ctx.strokeStyle = 'rgba(255,255,255,0.8)'
+  ctx.lineWidth = 1
   ctx.stroke()
   ctx.fillStyle = '#ffffff'
   ctx.strokeStyle = '#000000'

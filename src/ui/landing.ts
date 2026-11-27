@@ -15,6 +15,20 @@ export function shouldReport(
   return nowMs - landed.releasedAt >= GHOST_MS + FLY_MS || phase === 'aiming'
 }
 
+/**
+ * Hand a landed dart to the game. An exception in the game's handler is logged, never rethrown, so it cannot stop
+ * the frame loop (and freeze the board). Returns false when the handler threw.
+ */
+export function reportSafely<E>(onThrow: (e: E) => void, event: E, log: (...args: unknown[]) => void = console.error): boolean {
+  try {
+    onThrow(event)
+    return true
+  } catch (err) {
+    log('Tungstrike: onThrow failed', err)
+    return false
+  }
+}
+
 /** 0 during the ghost, then 0..1 over the flight, clamped to 1. */
 export function flightProgress(dtMs: number): number {
   if (dtMs < GHOST_MS) return 0

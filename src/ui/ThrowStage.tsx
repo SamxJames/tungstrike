@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'preact/hooks'
 import type { ComponentChildren } from 'preact'
 import { bedLabel, targetFromTap } from '../core/board.ts'
-import { resolveThrow, crosshairAt } from '../core/throw.ts'
+import { resolveThrow, crosshairAt, scatterCapUnits } from '../core/throw.ts'
 import type { Point, Settings, ThrowCtx, ThrowInput, ThrowResult } from '../core/types.ts'
 import { drawBoard } from '../render/board.ts'
 import { drawAim, drawDart, drawGhost, drawTargetMarker } from '../render/overlay.ts'
 import { makeView, toBoard } from '../render/view.ts'
-import { GHOST_MS, flightProgress, shouldReport } from './landing.ts'
+import { GHOST_MS, flightProgress, reportSafely, shouldReport } from './landing.ts'
 import { AimSession } from './session.ts'
 
 export interface ThrowEvent { index: number; input: ThrowInput; ctx: ThrowCtx; result: ThrowResult }
@@ -58,6 +58,8 @@ export function ThrowStage(props: ThrowStageProps) {
     resize()
 
     const frame = (now: number) => {
+      // Schedule the next frame first, so nothing thrown below can stop the loop.
+      raf = requestAnimationFrame(frame)
       const session = sessionRef.current!
       const p = propsRef.current
       const rect = canvas.getBoundingClientRect()
@@ -67,7 +69,7 @@ export function ThrowStage(props: ThrowStageProps) {
       const hadPending = session.pendingTarget !== null
       if (session.advance(now) && hadPending && wholeRef.current) setWhole(false)
       const view = viewFor(rect.width, rect.height)
-      const capUnits = p.settings.scatterCap * 8
+      const capUnits = scatterCapUnits(p.settings)
       drawBoard(ctx2d, view)
       drawTargetMarker(ctx2d, view, session.target)
       // Show a tap made during the cooldown straight away, so the player sees it registered.
@@ -80,7 +82,7 @@ export function ThrowStage(props: ThrowStageProps) {
         setChip(`${bedLabel(r.bed)} · ${r.bed.score}`)
         window.clearTimeout(chipTimer)
         chipTimer = window.setTimeout(() => setChip(null), 600)
-        p.onThrow(landed.event)
+        reportSafely(p.onThrow, landed.event)
       }
       if (session.phase === 'aiming' || landed === null) {
         const ctx: ThrowCtx = { seed: p.seed, throwIndex: session.throwIndex, settings: p.settings, target: session.target }
@@ -91,7 +93,6 @@ export function ThrowStage(props: ThrowStageProps) {
         drawGhost(ctx2d, view, r.crosshair, capUnits)
         if (dt >= GHOST_MS) drawDart(ctx2d, view, r.crosshair, r.landing, flightProgress(dt))
       }
-      raf = requestAnimationFrame(frame)
     }
     raf = requestAnimationFrame(frame)
 

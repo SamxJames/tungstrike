@@ -1,11 +1,9 @@
 import { UNITS_PER_TREBLE_WIDTH } from '../core/constants.ts'
+import { LEAD_MAX, LEAD_MIN, LEAD_STEP } from '../core/lead.ts'
 import type { LeadSuggestion } from '../core/lead.ts'
 
 export const CYCLE_MS = 1000
 export const CROSS_MS = 500
-const LEAD_MIN = -150
-const LEAD_MAX = 150
-const LEAD_STEP = 4
 
 /** Left edge (px) of the moving bar. At phase 0.5 the bar's centre is the track's centre (the white line). */
 export function barLeftPx(phase: number, trackPx: number, barPx: number): number {

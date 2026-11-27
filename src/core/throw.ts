@@ -2,11 +2,16 @@ import { TICK_MS } from './constants.ts'
 import { bedAt } from './board.ts'
 import { draw } from './rng.ts'
 import { cos16, sin16 } from './tables/sine.ts'
-import type { Point, ThrowCtx, ThrowResult } from './types.ts'
+import type { Point, Settings, ThrowCtx, ThrowResult } from './types.ts'
 
 /** Draw 0 = wobble phase, draws 1-16 = eight x/y attempts for the scatter disc, draw 17 = centre weight. */
 export const DRAWS_PER_THROW = 18
 const UNITS_PER_TENTH_TW = 8
+
+/** Radius of the scatter ring in board units: what the renderer draws is exactly what scatterFor can reach. */
+export function scatterCapUnits(settings: Settings): number {
+  return settings.scatterCap * UNITS_PER_TENTH_TW
+}
 
 export function releaseTickFor(rawMs: number, leadMs: number): number {
   return Math.max(0, Math.floor((rawMs - leadMs) / TICK_MS))
@@ -43,7 +48,7 @@ export function scatterFor(ctx: ThrowCtx): Point {
     }
   }
   const weight = draw(seed, throwIndex, 17) % 65536
-  const cap = settings.scatterCap * UNITS_PER_TENTH_TW
+  const cap = scatterCapUnits(settings)
   // `+ 0` turns -0 (a negative pick truncated to nothing) into +0, so equal scatters compare equal and survive a JSON round trip.
   return {
     x: Math.trunc((pickX * weight * cap) / (32768 * 65536)) + 0,
