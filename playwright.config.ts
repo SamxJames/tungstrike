@@ -5,6 +5,8 @@ export default defineConfig({
   outputDir: 'test-results',
   fullyParallel: true,
   retries: process.env.CI ? 1 : 0,
+  // CI runners have 2 cores; timing-sensitive tests flake when oversubscribed. Locally, Playwright picks.
+  workers: process.env.CI ? 2 : undefined,
   reporter: [['list']],
   use: { baseURL: 'http://localhost:4173', trace: 'retain-on-failure' },
   webServer: {

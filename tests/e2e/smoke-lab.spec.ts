@@ -20,16 +20,20 @@ test('lab: timing check bar sweeps the whole track, five taps set a grid-snapped
   const track = page.getByTestId('calibrate-track')
   await expect(bar).toBeVisible()
   const trackBox = (await track.boundingBox())!
-  // Sample the bar for ~600ms: it must travel across most of the track, not a few pixels.
+  const barW = (await bar.boundingBox())!.width
+  const travel = trackBox.width - barW
+  // Sample the bar for at least 600ms and at least 8 samples (a busy machine samples slowly). One sweep is 1000ms, so
+  // in 600ms it covers well over a third of the track wherever it starts: judge relative to the track, not in pixels.
   const xs: number[] = []
   const t0 = Date.now()
-  while (Date.now() - t0 < 600) {
+  while ((Date.now() - t0 < 600 || xs.length < 8) && Date.now() - t0 < 5000) {
     const b = await bar.boundingBox()
-    if (b) xs.push(b.x)
+    if (b) xs.push(b.x - trackBox.x)
     await page.waitForTimeout(30)
   }
-  expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(100)
-  expect(Math.max(...xs) - trackBox.x).toBeLessThanOrEqual(trackBox.width)
+  expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(travel * 0.3)
+  expect(Math.min(...xs)).toBeGreaterThanOrEqual(-1)
+  expect(Math.max(...xs)).toBeLessThanOrEqual(travel + 1)
   await page.screenshot({ path: `test-results/lab-timing-${info.project.name}.png`, fullPage: false })
 
   // Five taps finish the check once; extra taps are ignored; the lead lands on the slider grid.

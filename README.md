@@ -10,3 +10,5 @@ Built mostly by Claude Code, using an agent-first workflow:
 - GitHub Issues = backlog (`agent-ready`, `waiting-on-sam`).
 
 Start a session: open Claude Code in this repo and type `/next`.
+
+Requires Node 22.18 or newer (the scripts import `.ts` files directly). `npm install`, then `npm run dev` or `npm run check`.

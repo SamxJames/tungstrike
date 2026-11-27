@@ -38,9 +38,12 @@ jobs:
       - run: npm run check
         if: steps.app.outputs.present == 'true'
 
+      - run: npm run build
+        if: steps.app.outputs.present == 'true'
+
       - name: Mobile e2e
         if: steps.app.outputs.present == 'true' && hashFiles('playwright.config.ts') != ''
-        run: npx playwright install --with-deps chromium webkit &&npx playwright test
+        run: npx playwright install --with-deps chromium webkit && npx playwright test
 
       - uses: actions/upload-artifact@v4
         if: always() && steps.app.outputs.present == 'true'
