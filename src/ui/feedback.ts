@@ -110,10 +110,14 @@ export async function sendResults(url: string | undefined, payload: ResultsPaylo
   }
 }
 
+/** Printed at the start of a visit's block when a dart was reported out of order (the analyse script looks for this prefix). */
+export const LOG_GAP_LINE = 'Log gap detected: the throw log has a gap, so this run code may not replay every dart.'
+
 /** The plain-text version of the results that "Copy my results" puts on the clipboard. */
 export function resultsText(p: ResultsPayload): string {
   // Each visit is a block: its legs, then its run code, then its warm-up code (the analyse script relies on this order).
-  const block = (legs: LegRecord[], run: string, warmup: string | null) => [
+  const block = (legs: LegRecord[], run: string, warmup: string | null, logGap?: true) => [
+    logGap ? LOG_GAP_LINE : '',
     ...(legs.length
       ? legs.map(
           (l, i) =>
@@ -126,9 +130,8 @@ export function resultsText(p: ResultsPayload): string {
   return [
     `Tungstrike results (build ${p.build}, visit ${p.visit})`,
     `Device: ${p.device}`,
-    p.logGap ? 'Throw log has a gap: this run code may not replay every dart.' : '',
-    ...block(p.legs, p.run, p.warmup),
-    ...p.earlier.flatMap((e) => [`Earlier visit ${e.visit} (started ${new Date(e.startedAt).toISOString()}, not sent before)`, ...block(e.legs, e.run, e.warmup)]),
+    ...block(p.legs, p.run, p.warmup, p.logGap),
+    ...p.earlier.flatMap((e) => [`Earlier visit ${e.visit} (started ${new Date(e.startedAt).toISOString()}, not sent before)`, ...block(e.legs, e.run, e.warmup, e.logGap)]),
   ]
     .filter(Boolean)
     .join('\n')

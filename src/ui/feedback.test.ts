@@ -96,6 +96,11 @@ describe('buildPayload', () => {
     expect(p.warmup).toBeNull()
     expect(p.logGap).toBeUndefined()
   })
+  it('puts a stored visit’s log gap in its earlier entry', () => {
+    const p = buildPayload({ ...base, legs: [], earlier: [{ ...visitRec('old'), logGap: true }, visitRec('ok')] })
+    expect(p.earlier[0].logGap).toBe(true)
+    expect('logGap' in p.earlier[1]).toBe(false)
+  })
   it('includes unsent earlier visits and excludes sent ones', () => {
     const s = store()
     saveVisit(visitRec('a'), s)
@@ -123,6 +128,22 @@ describe('resultsText with earlier visits and log gaps', () => {
   })
   it('notes a gap in the throw log', () => {
     expect(resultsText(payload)).not.toContain('gap')
-    expect(resultsText({ ...payload, logGap: true })).toContain('Throw log has a gap')
+    expect(resultsText({ ...payload, logGap: true })).toContain('Log gap detected')
+  })
+  it('notes a gap in an earlier visit inside that visit’s own block, and only there', () => {
+    const t = resultsText({
+      ...payload,
+      earlier: [
+        { visit: 'gappy', startedAt: 0, run: 'GAPRUN', warmup: null, legs: [], logGap: true },
+        { visit: 'clean', startedAt: 0, run: 'CLEANRUN', warmup: null, legs: [] },
+      ],
+    })
+    const lines = t.split('\n')
+    const gappy = lines.findIndex((l) => l.startsWith('Earlier visit gappy'))
+    const gapLine = lines.findIndex((l) => l.startsWith('Log gap detected'))
+    expect(lines.filter((l) => l.startsWith('Log gap detected'))).toHaveLength(1)
+    expect(gapLine).toBeGreaterThan(gappy)
+    expect(gapLine).toBeLessThan(lines.indexOf('Run code: GAPRUN'))
+    expect(lines.findIndex((l) => l.startsWith('Earlier visit clean'))).toBeGreaterThan(lines.indexOf('Run code: GAPRUN'))
   })
 })
