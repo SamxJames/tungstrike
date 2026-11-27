@@ -178,6 +178,21 @@ describe('analyse: the same visit copied more than once', () => {
     expect(lines.some((l) => l.includes('visit8') && l.startsWith('dropped'))).toBe(false)
     expect(lines.filter((l) => /^run 3 leg/.test(l))).toEqual(['run 3 leg 1: 40 darts, won, landed where aimed: mostly'])
   })
+  it('keeps the fullest copy when copies are pasted out of order, and the later one on a tie', () => {
+    const lines = analyse([copy3, copy1, copy2].join('\n\n'))
+    expect(runLines(lines)).toHaveLength(1)
+    expect(runLines(lines)[0]).toContain('throws 60')
+    expect(lines).toContain('dropped 2 earlier copies of visit visit9')
+    const tie = analyse([copy2, copy2.replace('visit9', 'visit9')].join('\n\n'))
+    expect(runLines(tie)).toHaveLength(1)
+    expect(tie).toContain('dropped 1 earlier copy of visit visit9')
+  })
+  it('de-duplicates copies with CRLF line endings', () => {
+    const lines = analyse([copy1, copy2, copy3].join('\r\n\r\n').replace(/\n(?!\r)/g, '\r\n'))
+    expect(runLines(lines)).toHaveLength(1)
+    expect(runLines(lines)[0]).toContain('throws 60')
+    expect(lines).toContain('dropped 2 earlier copies of visit visit9')
+  })
   it('never drops a bare code or share link, even when the same code is pasted twice', () => {
     expect(runLines(analyse(`${code}\n${code}`))).toHaveLength(2)
   })
@@ -194,14 +209,14 @@ describe('analyse: what each run line reports', () => {
     expect(line).toContain(`T20 ${pct(s.t20Rate)} of ${s.aimedAtT20} aimed`)
     expect(line).toContain(`in 20 ${pct(s.in20Rate)}`)
     expect(line).toContain(`near 20 ${pct(s.near20Rate)}`)
-    expect(line).toContain(`3-dart avg ${s.threeDartAverage === null ? 'n/a' : s.threeDartAverage.toFixed(1)} over ${s.turns} turns`)
+    expect(line).toContain(`per-turn avg ${s.threeDartAverage === null ? 'n/a' : s.threeDartAverage.toFixed(1)} over ${s.turns} turns`)
     expect(line).toContain('timing 100% of')
   })
   it('says n/a rather than NaN when there is nothing to measure', () => {
     const line = runLine(encodeRunCode({ v: 1, seed: 1, settings: DEFAULT_SETTINGS, throws: [] }))
     expect(line).toContain('timing n/a of 0 misses')
     expect(line).toContain('T20 n/a of 0 aimed')
-    expect(line).toContain('3-dart avg n/a over 0 turns')
+    expect(line).toContain('per-turn avg n/a over 0 turns')
     expect(line).not.toContain('NaN')
   })
   it('echoes a log gap on the run line of the visit it belongs to, current or earlier', () => {

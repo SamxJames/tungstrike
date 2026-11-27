@@ -24,5 +24,7 @@ Kept current by `/handover` at the end of every Claude Code session. Read this f
 
 ## Session log
 (newest first, one or two lines each)
+- 2026-11-27: #14 analysis polish: fullest copy of a visit wins (any paste order), label is now "per-turn avg", a code that
+  fails during replay is reported as invalid instead of crashing the analysis.
 - 2026-11-27: M0 final fix wave: visits kept across reloads, private-tab notice, landscape fixes, first-screen intro,
   overlay contrast, CI build step, guard hardening, more pinned tests and a second replay golden.
