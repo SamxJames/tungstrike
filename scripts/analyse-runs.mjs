@@ -17,9 +17,8 @@ const GAP_LINE = /^(Log gap detected|Throw log has a gap)\b/
 
 const pct = (v) => (v === null ? 'n/a' : `${(v * 100).toFixed(0)}%`)
 
-function summaryLine(n, code, logGap) {
-  const s = summariseRun(decodeRunCode(code))
-  // Three-dart average: points scored in turns that did not bust, divided by completed turns (a bust turn counts as a
+function summaryLine(n, s, logGap) {
+  // Per-turn average (not a real darts average): points scored in turns that did not bust, divided by completed turns (a bust turn counts as a
   // turn that scored nothing; a turn still in progress when the run stops is left out). See turnStats in src/core/analysis.ts.
   // Timing share: of the darts that missed their target bed, the share whose crosshair was already outside it at release
   // (spec target: 65%+). T20 / in 20 / near 20 (sectors 20, 1, 5): landing rates of darts aimed at T20
@@ -30,7 +29,7 @@ function summaryLine(n, code, logGap) {
     `on-target ${(s.hitRate * 100).toFixed(0)}%, mean miss ${s.meanMissTrebleWidths.toFixed(2)} treble widths, ` +
     `timing ${pct(s.timingMissShare)} of ${s.misses} misses, ` +
     `T20 ${pct(s.t20Rate)} of ${s.aimedAtT20} aimed, in 20 ${pct(s.in20Rate)}, near 20 ${pct(s.near20Rate)}, ` +
-    `3-dart avg ${s.threeDartAverage === null ? 'n/a' : s.threeDartAverage.toFixed(1)} over ${s.turns} turns` +
+    `per-turn avg ${s.threeDartAverage === null ? 'n/a' : s.threeDartAverage.toFixed(1)} over ${s.turns} turns` +
     (logGap ? ', log gap detected (run code may not replay every dart)' : '')
   )
 }
@@ -45,7 +44,7 @@ const URL_RUN = /[?#&]run=([A-Za-z0-9_-]+)/
  * after the run they belong to, as `run N leg M: ...`. Rated legs with no run after them are listed at the end.
  *
  * Copies are cumulative: a tester who taps Copy twice in one visit sends the same visit id twice, the later block holding
- * every dart of the earlier one. Only the LAST block per visit id is analysed (so legs and darts are not counted twice),
+ * every dart of the earlier one. Only the fullest block per visit id (most darts, ties to the later one) is analysed (so legs and darts are not counted twice),
  * and a `dropped N earlier copy/copies of visit <id>` line says what was left out. Bare codes and share links have no
  * visit id and are never dropped. A visit block with a log gap gets `log gap detected` on its run line.
  */
@@ -77,9 +76,12 @@ export function analyse(text) {
       if (m) pending.push({ n: m[1], text: `${m[2]} darts, ${m[3]}, landed where aimed: ${m[4]}` })
       return
     }
-    const entry = { line: i + 1, code, legs: pending, visit, gap, valid: true }
+    const entry = { line: i + 1, code, legs: pending, visit, gap, valid: true, summary: null, throws: 0 }
     try {
-      decodeRunCode(code)
+      // Decode AND replay here, so a code that decodes but throws during replay is reported as invalid, not a crash.
+      const log = decodeRunCode(code)
+      entry.summary = summariseRun(log)
+      entry.throws = log.throws.length
     } catch {
       entry.valid = false
       entry.visit = null // a broken code is only reported; it never replaces a good copy of its visit
@@ -90,10 +92,13 @@ export function analyse(text) {
     gap = false
   })
 
-  // Keep only the last entry for each visit id; count what was dropped.
+  // Keep one entry for each visit id: the copy with the most decoded throws, ties going to the later one (so the
+  // order the copies were pasted in does not matter); count what was dropped.
   const lastFor = new Map()
   entries.forEach((e, idx) => {
-    if (e.visit !== null) lastFor.set(e.visit, idx)
+    if (e.visit === null) return
+    const best = lastFor.get(e.visit)
+    if (best === undefined || e.throws >= entries[best].throws) lastFor.set(e.visit, idx)
   })
   const droppedBefore = new Map()
   const kept = []
@@ -110,7 +115,7 @@ export function analyse(text) {
     if (dropped > 0) out.push(`dropped ${dropped} earlier ${dropped === 1 ? 'copy' : 'copies'} of visit ${e.visit}`)
     if (e.valid) {
       runCount += 1
-      out.push(summaryLine(runCount, e.code, e.gap))
+      out.push(summaryLine(runCount, e.summary, e.gap))
       for (const l of e.legs) out.push(`run ${runCount} leg ${l.n}: ${l.text}`)
     } else {
       out.push(`line ${e.line}: not a valid run code`)
