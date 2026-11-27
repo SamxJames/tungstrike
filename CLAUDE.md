@@ -20,11 +20,25 @@ Use the Superpowers skills. For every milestone or non-trivial feature:
    Run independent tasks in parallel where they touch different files.
 5. `superpowers:requesting-code-review` after each batch. Fix what it finds.
 6. `superpowers:verification-before-completion` → `npm run check` passes and the Playwright mobile screenshots are attached,
-   **then** open a PR with `superpowers:finishing-a-development-branch`. **Gate: Sam merges.**
+   **then** open a PR with `superpowers:finishing-a-development-branch`. **Merge gate (decided 2026-11-27):** a `risk:low` PR
+   (UI, copy, tests, docs, tooling) is merged by Claude once CI `check` is green and the review is clean; a `risk:high` or
+   unlabelled PR (money, secrets, persisted or server data, anything public, game feel or scope changes, the throw maths in
+   `src/core/`) stops at the PR for Sam. Never merge a PR that touches `.claude/settings.json` or other permission config.
 7. Run `/handover` at the end of every session.
 
 Between the gates, don't stop to ask permission for routine work. Stop and ask only if a decision is product-shaped (game feel,
 scope, money, anything public), irreversible, or contradicts the brief.
+
+## Autonomous mode (runs without Sam's PC, from the repo)
+A scheduled cloud routine (or `/next` in any session) works the board with no one watching:
+- Pick the top GitHub issue labelled `agent-ready` that is not `in-progress` or `waiting-on-sam`. Label it `in-progress` first.
+- Respect the roadmap gates in `docs/roadmap.md`: nothing from M1 onwards until Sam records that Gate 1 passed in
+  `docs/decisions.md`. Issues for later milestones stay untouched.
+- Issue-sized, `risk:low` work: self-approve the spec and plan against the issue's "Done when" (keep them to one screen), then
+  build, review, `npm run check`, open the PR with `Closes #n`, and merge per the merge gate above.
+- Anything that needs Sam (a decision, an account, a dashboard, his phone): comment the question on the issue, label it
+  `waiting-on-sam`, and move on to the next issue. Nothing blocks the loop.
+- End every run with `/handover`: update `docs/handover.md` (under 150 lines) and say what was done, merged, and is waiting.
 
 Project subagents in `.claude/agents/`:
 - `game-designer`: card ideas, difficulty curve, and "is this fun / is this fair" reviews against the brief.
