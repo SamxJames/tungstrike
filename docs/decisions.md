@@ -2,6 +2,15 @@
 
 Newest first. Each entry: date · decision · why · what would change it.
 
+- **2026-11-27 · Claude develops autonomously and merges `risk:low` PRs (Sam's call).** Why: Sam has 5-10 hours a week
+  and wants the build to continue without his PC being on (a scheduled cloud routine works the board). Rules: `risk:low` =
+  UI, copy, tests, docs, tooling; Claude merges once CI `check` is green and the review is clean. `risk:high` or unlabelled
+  (money, secrets, persisted or server data, anything public, game feel or scope, the throw maths in `src/core/`) stops at
+  the PR for Sam. Never merges a PR that touches permission config (`.claude/settings.json`). The roadmap gates still hold:
+  no M1 work until Sam records that Gate 1 passed here. Branch protection (PR + green `check`, no direct pushes to `main`)
+  and the repo's "Allow auto-merge" setting are on. Change if: an autonomous merge breaks `main`, or Sam wants tighter
+  control. Replaces the earlier "Sam merges" gate (2026-11-15 workflow entry).
+
 - **2026-11-27 · Visits are kept on the phone until they are sent.** After every dart, rating and "Another leg", the leg
   screen saves this visit's throw logs (seed, frozen settings, every dart's target and release time, the warm-up darts)
   to `localStorage` (`ts.visits.v1`, last 5 visits); ratings stay in `ts.legs.v1`. On the next load, visits never sent go
