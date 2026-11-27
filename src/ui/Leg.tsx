@@ -83,6 +83,7 @@ export function Leg() {
       warmSettings: w.settings,
       warmInputs: w.inputs,
       sent: false,
+      ...(logGap.current ? { logGap: true as const } : {}),
     })
   }
 

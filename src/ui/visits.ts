@@ -25,10 +25,12 @@ export interface VisitRecord {
   warmInputs: ThrowInput[]
   /** True once these logs went out in a Send that returned OK or a Copy that succeeded. */
   sent: boolean
+  /** True when a dart was reported out of order in this visit, so its run code may not replay every dart. */
+  logGap?: true
 }
 
 /** An earlier, unsent visit as it goes into the results payload. */
-export interface EarlierVisit { visit: string; startedAt: number; run: string; warmup: string | null; legs: LegRecord[] }
+export interface EarlierVisit { visit: string; startedAt: number; run: string; warmup: string | null; legs: LegRecord[]; logGap?: true }
 
 const MAX_TIME = 8.64e15
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
@@ -47,7 +49,7 @@ function readVisit(raw: unknown): VisitRecord | null {
     const warmRaw = raw.warmSettings ?? null
     const run = readLog(raw.seed, playedRaw ?? warmRaw ?? DEFAULT_SETTINGS, raw.inputs)
     const warm = readLog(raw.warmSeed, warmRaw ?? DEFAULT_SETTINGS, raw.warmInputs)
-    return {
+    const record: VisitRecord = {
       visit: raw.visit,
       startedAt: raw.startedAt,
       seed: run.seed,
@@ -58,6 +60,8 @@ function readVisit(raw: unknown): VisitRecord | null {
       warmInputs: warm.throws,
       sent: raw.sent,
     }
+    if (raw.logGap === true) record.logGap = true
+    return record
   } catch {
     return null
   }
@@ -100,11 +104,15 @@ export function markSent(visits: string[], storage?: Storage): boolean {
 
 /** Build the payload entries for earlier visits: their run and warm-up codes, and their legs from the stored list. */
 export function earlierEntries(visits: VisitRecord[], legs: LegRecord[]): EarlierVisit[] {
-  return visits.map((v) => ({
-    visit: v.visit,
-    startedAt: v.startedAt,
-    run: encodeRunCode({ v: 1, seed: v.seed, settings: v.played ?? v.warmSettings ?? DEFAULT_SETTINGS, throws: v.inputs }),
-    warmup: v.warmInputs.length ? encodeRunCode({ v: 1, seed: v.warmSeed, settings: v.warmSettings ?? DEFAULT_SETTINGS, throws: v.warmInputs }) : null,
-    legs: legs.filter((l) => l.visit === v.visit),
-  }))
+  return visits.map((v) => {
+    const entry: EarlierVisit = {
+      visit: v.visit,
+      startedAt: v.startedAt,
+      run: encodeRunCode({ v: 1, seed: v.seed, settings: v.played ?? v.warmSettings ?? DEFAULT_SETTINGS, throws: v.inputs }),
+      warmup: v.warmInputs.length ? encodeRunCode({ v: 1, seed: v.warmSeed, settings: v.warmSettings ?? DEFAULT_SETTINGS, throws: v.warmInputs }) : null,
+      legs: legs.filter((l) => l.visit === v.visit),
+    }
+    if (v.logGap) entry.logGap = true
+    return entry
+  })
 }

@@ -91,6 +91,28 @@ describe('saveVisit / loadUnsentVisits', () => {
   })
 })
 
+describe('logGap', () => {
+  it('keeps a log gap through save and load, and leaves the key out when there was none', () => {
+    const s = memory()
+    saveVisit(rec('gap', { logGap: true }), s)
+    saveVisit(rec('fine'), s)
+    const loaded = loadUnsentVisits('z', s)
+    expect(loaded.find((x) => x.visit === 'gap')?.logGap).toBe(true)
+    expect('logGap' in loaded.find((x) => x.visit === 'fine')!).toBe(false)
+  })
+  it('ignores a stored logGap that is not exactly true', () => {
+    const s = memory()
+    s.setItem(VISITS_KEY, JSON.stringify([rec('a', { logGap: 'yes' as never }), rec('b', { logGap: false as never })]))
+    for (const v of loadUnsentVisits('z', s)) expect('logGap' in v).toBe(false)
+  })
+  it('a later save without the flag keeps what the caller passes (the UI keeps it sticky)', () => {
+    const s = memory()
+    saveVisit(rec('a', { logGap: true }), s)
+    saveVisit(rec('a'), s)
+    expect('logGap' in loadUnsentVisits('z', s)[0]).toBe(false)
+  })
+})
+
 describe('markSent', () => {
   it('marks only the named visits as sent, so they are not offered again', () => {
     const s = memory()
@@ -118,6 +140,11 @@ describe('blocked storage', () => {
 })
 
 describe('earlierEntries', () => {
+  it('carries a visit’s log gap into its entry, and omits it otherwise', () => {
+    const [a, b] = earlierEntries([rec('a', { logGap: true }), rec('b')], [])
+    expect(a.logGap).toBe(true)
+    expect('logGap' in b).toBe(false)
+  })
   const leg = (visit: string): LegRecord => ({ darts: 30, busts: 0, won: true, rating: 'mostly', build: 'b', settingsKey: 'k', visit, startThrow: 0 })
   it('turns each stored visit into run and warm-up codes with that visit’s legs', () => {
     const [e] = earlierEntries([rec('a')], [leg('a'), leg('b'), leg('a')])
