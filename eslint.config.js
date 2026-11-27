@@ -5,7 +5,7 @@ import { defineConfig } from 'eslint/config'
 
 // ESLint core's defineConfig replaces the deprecated tseslint.config helper.
 export default defineConfig(
-  { ignores: ['dist', 'node_modules', 'test-results', 'playwright-report', 'coverage', '.claude', 'src/core/tables/generated.ts'] },
+  { ignores: ['dist', 'node_modules', 'test-results', 'playwright-report', 'coverage', '.claude', '.superpowers', 'src/core/tables/generated.ts'] },
   js.configs.recommended,
   tseslint.configs.recommended,
   { files: ['src/**/*.{ts,tsx}', 'tests/**/*.ts'], languageOptions: { globals: globals.browser } },
