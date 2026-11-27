@@ -68,6 +68,33 @@ describe('AimSession', () => {
     s.resume(1000)
     expect(s.tick(1000)).toBe(125)
   })
+  it('a tap during the cooldown is kept and applied when the next dart begins, with the wobble starting then', () => {
+    const s = new AimSession(T20, 0)
+    s.release(500, 0)
+    expect(s.retarget(700, { x: 100, y: 0 })).toBe(false) // false: the target has not changed yet
+    expect(s.target).toEqual(T20) // the dart in flight keeps its target
+    expect(s.pendingTarget).toEqual({ x: 100, y: 0 })
+    expect(s.advance(500 + THROW_LOCK_MS)).toBe(true)
+    expect(s.target).toEqual({ x: 100, y: 0 })
+    expect(s.pendingTarget).toBeNull()
+    expect(s.tick(500 + THROW_LOCK_MS)).toBe(0)
+    expect(s.release(500 + THROW_LOCK_MS + 80, 0)).toEqual({ target: { x: 100, y: 0 }, releaseTick: 10, rawMs: 80 })
+  })
+  it('a second tap during the cooldown overwrites the first pending one', () => {
+    const s = new AimSession(T20, 0)
+    s.release(500, 0)
+    s.retarget(600, { x: 100, y: 0 })
+    s.retarget(700, { x: -100, y: 0 })
+    s.advance(1100)
+    expect(s.target).toEqual({ x: -100, y: 0 })
+  })
+  it('a tap during the cooldown is still ignored while paused', () => {
+    const s = new AimSession(T20, 0)
+    s.release(500, 0)
+    s.pause()
+    expect(s.retarget(600, { x: 100, y: 0 })).toBe(false)
+    expect(s.pendingTarget).toBeNull()
+  })
   it('retarget() while paused returns false and leaves the target unchanged', () => {
     const s = new AimSession(T20, 0)
     s.pause()

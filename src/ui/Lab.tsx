@@ -108,6 +108,9 @@ export function Lab() {
       {finished && reportOpen && (
         <div class="sheet">
           <div class="sheet-inner">
+            <button class="btn sheet-top-close" data-testid="close-report-top" onClick={() => setReportOpen(false)}>
+              Back to the Lab
+            </button>
             <DrillReport
               records={records}
               settings={drill.settings}

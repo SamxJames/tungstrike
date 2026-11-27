@@ -1,9 +1,9 @@
 import { bedCentre, makeBed } from '../core/board.ts'
 import { bestLead } from '../core/lead.ts'
 import { summariseDrill } from '../core/drill.ts'
-import { UNITS_PER_TREBLE_WIDTH } from '../core/constants.ts'
 import type { Settings, ThrowCtx, ThrowInput } from '../core/types.ts'
 import type { DrillDart } from '../core/drill.ts'
+import { leadAdvice } from './calibrate-math.ts'
 
 export interface DrillRecord { dart: DrillDart; ctx: ThrowCtx; input: ThrowInput; rawMs: number }
 
@@ -33,7 +33,6 @@ export function DrillReport(props: {
     props.settings.leadMs,
   )
   const counts = Object.entries(s.counts).map(([k, v]) => `${k} x${v}`).join(', ')
-  const tw = (u: number) => (u / UNITS_PER_TREBLE_WIDTH).toFixed(1)
   const sign = suggestion.leadMs >= 0 ? '+' : ''
   const ring = props.settings.scatterCap * 8
 
@@ -68,12 +67,7 @@ export function DrillReport(props: {
       )}
       <p>{VERDICT[s.verdict]}</p>
       <p>
-        {suggestion.usable && (
-          <span>
-            Group {tw(suggestion.before)} → {tw(suggestion.after)} treble widths with {sign}
-            {suggestion.leadMs} ms.{' '}
-          </span>
-        )}
+        {suggestion.usable && <span>{leadAdvice(suggestion, props.settings.leadMs).group} </span>}
         <button class="btn primary" data-testid="apply-lead" disabled={!suggestion.usable} onClick={() => props.onApplyLead(suggestion.leadMs)}>
           {suggestion.usable ? `Apply ${sign}${suggestion.leadMs} ms` : 'Apply lead'}
         </button>

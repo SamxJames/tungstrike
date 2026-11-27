@@ -1,4 +1,7 @@
-import type { Settings } from '../core/types.ts'
+import { encodeRunCode } from '../core/replay.ts'
+import type { RunLog, Settings } from '../core/types.ts'
+import { earlierEntries } from './visits.ts'
+import type { EarlierVisit, VisitRecord } from './visits.ts'
 
 export type Rating = 'mostly' | 'sometimes' | 'rarely'
 
@@ -20,7 +23,52 @@ export interface LegRecord {
   startThrow: number
 }
 
-export interface ResultsPayload { v: 1; build: string; visit: string; device: string; settings: Settings; legs: LegRecord[]; run: string; warmup: string | null }
+export interface ResultsPayload {
+  v: 1
+  build: string
+  visit: string
+  device: string
+  settings: Settings
+  /** This visit's legs only. */
+  legs: LegRecord[]
+  run: string
+  warmup: string | null
+  /** Earlier visits on this phone that were never sent (each with its own logs and legs), oldest first. */
+  earlier: EarlierVisit[]
+  /** Present (true) when a dart was reported out of order, so the run code may not replay this visit faithfully. */
+  logGap?: true
+}
+
+export interface PayloadInput {
+  build: string
+  visit: string
+  device: string
+  /** The frozen settings this visit's leg is played with. */
+  settings: Settings
+  /** Every stored leg (any visit): this visit's go in `legs`, earlier visits' go with their entry. */
+  legs: LegRecord[]
+  run: RunLog
+  warm: RunLog | null
+  earlier: VisitRecord[]
+  logGap: boolean
+}
+
+/** Assemble what Send posts and Copy turns into text: this visit plus every unsent earlier visit. */
+export function buildPayload(i: PayloadInput): ResultsPayload {
+  const p: ResultsPayload = {
+    v: 1,
+    build: i.build,
+    visit: i.visit,
+    device: i.device,
+    settings: i.settings,
+    legs: i.legs.filter((l) => l.visit === i.visit),
+    run: encodeRunCode(i.run),
+    warmup: i.warm ? encodeRunCode(i.warm) : null,
+    earlier: earlierEntries(i.earlier, i.legs),
+  }
+  if (i.logGap) p.logGap = true
+  return p
+}
 
 const RATINGS: readonly string[] = ['mostly', 'sometimes', 'rarely']
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
@@ -64,11 +112,24 @@ export async function sendResults(url: string | undefined, payload: ResultsPaylo
 
 /** The plain-text version of the results that "Copy my results" puts on the clipboard. */
 export function resultsText(p: ResultsPayload): string {
-  const legs = p.legs.length
-    ? p.legs.map(
-        (l, i) =>
-          `Leg ${i + 1}: ${l.darts} darts, ${l.busts} busts, ${l.won ? 'won' : 'not finished'}, landed where aimed: ${l.rating ?? 'not rated'} (settings ${l.settingsKey}, starts at throw ${l.startThrow})`,
-      )
-    : ['No legs finished yet']
-  return [`Tungstrike results (build ${p.build}, visit ${p.visit})`, `Device: ${p.device}`, ...legs, `Run code: ${p.run}`, p.warmup ? `Warm-up code: ${p.warmup}` : ''].filter(Boolean).join('\n')
+  // Each visit is a block: its legs, then its run code, then its warm-up code (the analyse script relies on this order).
+  const block = (legs: LegRecord[], run: string, warmup: string | null) => [
+    ...(legs.length
+      ? legs.map(
+          (l, i) =>
+            `Leg ${i + 1}: ${l.darts} darts, ${l.busts} busts, ${l.won ? 'won' : 'not finished'}, landed where aimed: ${l.rating ?? 'not rated'} (settings ${l.settingsKey}, starts at throw ${l.startThrow})`,
+        )
+      : ['No legs finished yet']),
+    `Run code: ${run}`,
+    warmup ? `Warm-up code: ${warmup}` : '',
+  ]
+  return [
+    `Tungstrike results (build ${p.build}, visit ${p.visit})`,
+    `Device: ${p.device}`,
+    p.logGap ? 'Throw log has a gap: this run code may not replay every dart.' : '',
+    ...block(p.legs, p.run, p.warmup),
+    ...p.earlier.flatMap((e) => [`Earlier visit ${e.visit} (started ${new Date(e.startedAt).toISOString()}, not sent before)`, ...block(e.legs, e.run, e.warmup)]),
+  ]
+    .filter(Boolean)
+    .join('\n')
 }

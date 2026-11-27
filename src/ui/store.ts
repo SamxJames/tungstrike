@@ -1,6 +1,6 @@
 const LEAD_KEY = 'ts.lead.v1'
 
-function defaultStorage(): Storage | undefined {
+export function defaultStorage(): Storage | undefined {
   try {
     return globalThis.localStorage
   } catch {

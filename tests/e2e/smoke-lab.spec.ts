@@ -45,6 +45,23 @@ test('lab: timing check bar sweeps the whole track, five taps set a grid-snapped
   expect((lead + 150) % 4).toBe(0)
 })
 
+test('lab: in landscape the drill report has a close button that stays at the top while scrolling', async ({ page }) => {
+  await page.setViewportSize({ width: 844, height: 390 })
+  await page.goto('/lab')
+  await page.getByTestId('start-drill').click()
+  for (let i = 0; i < 10; i++) {
+    await page.waitForTimeout(700)
+    await page.getByTestId('release-pad').click()
+  }
+  await expect(page.getByTestId('drill-report')).toBeVisible({ timeout: 3000 })
+  const top = page.getByTestId('close-report-top')
+  await expect(top).toBeInViewport()
+  await page.locator('.sheet').evaluate((el) => el.scrollTo(0, el.scrollHeight))
+  await expect(top).toBeInViewport()
+  await top.click()
+  await expect(page.getByTestId('drill-report')).toHaveCount(0)
+})
+
 test('lab: share link, play-leg link, slider sizes', async ({ page }) => {
   // Make the share path deterministic: no native share sheet, clipboard accepts the text.
   await page.addInitScript(() => {

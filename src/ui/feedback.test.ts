@@ -1,12 +1,15 @@
 import { describe, it, expect, vi } from 'vitest'
 import { DEFAULT_SETTINGS } from '../core/settings.ts'
-import { parseStoredLegs, resultsText, sendResults } from './feedback.ts'
+import { decodeRunCode } from '../core/replay.ts'
+import { buildPayload, parseStoredLegs, resultsText, sendResults } from './feedback.ts'
 import type { LegRecord, ResultsPayload } from './feedback.ts'
+import { loadUnsentVisits, markSent, saveVisit } from './visits.ts'
+import type { VisitRecord } from './visits.ts'
 
 const leg: LegRecord = { darts: 31, busts: 1, won: true, rating: 'mostly', build: 'abc1234', settingsKey: '#v1&rad=25;lead=60', visit: 'visit9', startThrow: 0 }
 const payload: ResultsPayload = {
   v: 1, build: 'abc1234', visit: 'visit9', device: 'test-phone', settings: DEFAULT_SETTINGS,
-  legs: [leg], run: 'RUNCODE', warmup: null,
+  legs: [leg], run: 'RUNCODE', warmup: null, earlier: [],
 }
 
 describe('sendResults', () => {
@@ -68,5 +71,58 @@ describe('parseStoredLegs', () => {
   it('fills in tags missing from entries saved by an older build, and cleans the rating', () => {
     const [old] = parseStoredLegs([{ darts: 30, busts: 0, won: true, rating: 'banana' }])
     expect(old).toMatchObject({ darts: 30, busts: 0, won: true, rating: null, build: '', settingsKey: '', visit: '', startThrow: 0 })
+  })
+})
+
+describe('buildPayload', () => {
+  const store = (): Storage => {
+    const m = new Map<string, string>()
+    return { get length() { return m.size }, clear: () => m.clear(), getItem: (k) => m.get(k) ?? null, key: (i) => [...m.keys()][i] ?? null, removeItem: (k) => void m.delete(k), setItem: (k, v) => void m.set(k, v) }
+  }
+  const dart = { target: { x: 0, y: 1030 }, releaseTick: 12, rawMs: 96 }
+  const visitRec = (visit: string): VisitRecord => ({ visit, startedAt: 5, seed: 1, played: DEFAULT_SETTINGS, inputs: [dart], warmSeed: 2, warmSettings: null, warmInputs: [], sent: false })
+  const base = {
+    build: 'abc1234', visit: 'now', device: 'test-phone', settings: DEFAULT_SETTINGS,
+    run: { v: 1 as const, seed: 9, settings: DEFAULT_SETTINGS, throws: [dart] }, warm: null, logGap: false,
+  }
+
+  it('sends only this visit’s legs as legs, and each unsent earlier visit as its own entry', () => {
+    const p = buildPayload({ ...base, legs: [{ ...leg, visit: 'old' }, { ...leg, visit: 'now' }], earlier: [visitRec('old')] })
+    expect(p.legs).toEqual([{ ...leg, visit: 'now' }])
+    expect(p.earlier).toHaveLength(1)
+    expect(p.earlier[0]).toMatchObject({ visit: 'old', warmup: null, legs: [{ ...leg, visit: 'old' }] })
+    expect(decodeRunCode(p.earlier[0].run).throws).toEqual([dart])
+    expect(decodeRunCode(p.run)).toEqual(base.run)
+    expect(p.warmup).toBeNull()
+    expect(p.logGap).toBeUndefined()
+  })
+  it('includes unsent earlier visits and excludes sent ones', () => {
+    const s = store()
+    saveVisit(visitRec('a'), s)
+    saveVisit(visitRec('b'), s)
+    saveVisit(visitRec('now'), s)
+    markSent(['b'], s)
+    const p = buildPayload({ ...base, legs: [], earlier: loadUnsentVisits('now', s) })
+    expect(p.earlier.map((e) => e.visit)).toEqual(['a'])
+  })
+  it('flags a gap in the throw log', () => {
+    expect(buildPayload({ ...base, legs: [], earlier: [], logGap: true }).logGap).toBe(true)
+  })
+})
+
+describe('resultsText with earlier visits and log gaps', () => {
+  it('lists each earlier visit with its legs, run code and warm-up code after the current visit', () => {
+    const t = resultsText({
+      ...payload,
+      earlier: [{ visit: 'oldvisit', startedAt: 0, run: 'OLDRUN', warmup: 'OLDWARM', legs: [{ ...leg, visit: 'oldvisit', rating: 'rarely', darts: 44 }] }],
+    })
+    const lines = t.split('\n')
+    const at = lines.findIndex((l) => l.startsWith('Earlier visit oldvisit'))
+    expect(at).toBeGreaterThan(lines.indexOf('Run code: RUNCODE'))
+    expect(lines.slice(at + 1)).toEqual([expect.stringMatching(/^Leg 1: 44 darts, .*rarely/), 'Run code: OLDRUN', 'Warm-up code: OLDWARM'])
+  })
+  it('notes a gap in the throw log', () => {
+    expect(resultsText(payload)).not.toContain('gap')
+    expect(resultsText({ ...payload, logGap: true })).toContain('Throw log has a gap')
   })
 })

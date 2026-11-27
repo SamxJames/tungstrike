@@ -10,6 +10,8 @@ export class AimSession {
   target: Point
   throwIndex = 0
   phase: Phase = 'aiming'
+  /** A target tapped during the cooldown, applied when the next dart begins. */
+  pendingTarget: Point | null = null
   private aimStartMs: number
   private lockedUntilMs = 0
   private cooldownUntilMs = 0
@@ -24,8 +26,18 @@ export class AimSession {
     return Math.max(0, Math.floor((nowMs - this.aimStartMs) / TICK_MS))
   }
 
+  /**
+   * Aim somewhere else. While aiming this takes effect at once (returns true). During the post-throw cooldown the dart in
+   * flight keeps its target, so the tap is kept as `pendingTarget` and applied when the next dart begins (returns false:
+   * nothing changed yet; a later tap overwrites it). Ignored while paused.
+   */
   retarget(nowMs: number, target: Point): boolean {
-    if (this.paused || this.phase !== 'aiming') return false
+    if (this.paused) return false
+    if (this.phase === 'cooldown') {
+      this.pendingTarget = target
+      this.lockedUntilMs = nowMs + RETARGET_LOCK_MS
+      return false
+    }
     this.target = target
     this.aimStartMs = nowMs
     this.lockedUntilMs = nowMs + RETARGET_LOCK_MS
@@ -46,6 +58,10 @@ export class AimSession {
       this.phase = 'aiming'
       this.throwIndex += 1
       this.aimStartMs = nowMs
+      if (this.pendingTarget !== null) {
+        this.target = this.pendingTarget
+        this.pendingTarget = null
+      }
       return true
     }
     return false

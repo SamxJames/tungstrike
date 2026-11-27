@@ -63,11 +63,15 @@ export function ThrowStage(props: ThrowStageProps) {
       const rect = canvas.getBoundingClientRect()
       const dpr = canvas.width / Math.max(1, rect.width)
       ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0)
-      session.advance(now)
+      // A target tapped during the cooldown becomes the target as the next dart begins: zoom to it then.
+      const hadPending = session.pendingTarget !== null
+      if (session.advance(now) && hadPending && wholeRef.current) setWhole(false)
       const view = viewFor(rect.width, rect.height)
       const capUnits = p.settings.scatterCap * 8
       drawBoard(ctx2d, view)
       drawTargetMarker(ctx2d, view, session.target)
+      // Show a tap made during the cooldown straight away, so the player sees it registered.
+      if (session.pendingTarget !== null) drawTargetMarker(ctx2d, view, session.pendingTarget)
       const landed = landedRef.current
       // Report first, independent of the draw branch, so a dropped frame window can never lose a throw.
       if (landed !== null && shouldReport(landed, now, session.phase)) {

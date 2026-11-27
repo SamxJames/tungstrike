@@ -3,18 +3,19 @@ import { bedCentre, makeBed } from '../core/board.ts'
 import { DEFAULT_PAR } from '../core/constants.ts'
 import { bestLead } from '../core/lead.ts'
 import type { LeadSuggestion } from '../core/lead.ts'
-import { encodeRunCode } from '../core/replay.ts'
 import { decodeSettings, DEFAULT_SETTINGS, encodeSettings } from '../core/settings.ts'
-import type { RunLog, Settings, ThrowInput } from '../core/types.ts'
-import { snapLead } from './calibrate-math.ts'
+import type { Settings, ThrowInput } from '../core/types.ts'
+import { leadAdvice, snapLead } from './calibrate-math.ts'
 import { Calibrate } from './Calibrate.tsx'
-import { parseStoredLegs, resultsText, sendResults } from './feedback.ts'
+import { buildPayload, parseStoredLegs, resultsText, sendResults } from './feedback.ts'
 import type { Rating, ResultsPayload } from './feedback.ts'
 import { another as nextLeg, initFlow, onDart, rate as rateLeg } from './legFlow.ts'
 import type { LegFlow } from './legFlow.ts'
 import { loadJson, loadLead, saveJson, saveLead } from './store.ts'
 import { ThrowStage } from './ThrowStage.tsx'
 import type { ThrowEvent } from './ThrowStage.tsx'
+import { loadUnsentVisits, markSent, saveVisit } from './visits.ts'
+import type { VisitRecord } from './visits.ts'
 
 const T20 = bedCentre(makeBed('treble', 20))
 const LEGS_KEY = 'ts.legs.v1'
@@ -37,6 +38,13 @@ export function Leg() {
   const [warmSeed] = useState(newSeed)
   const [legSeed] = useState(newSeed)
   const [visit] = useState(newVisitId)
+  const [startedAt] = useState(() => Date.now())
+  // Probe once: a private tab (or blocked storage) cannot keep anything, and the results panel says so.
+  const [storageOk] = useState(() => saveJson('ts.probe', 1))
+  // Earlier visits on this phone whose logs were never sent: they go out with this visit's results.
+  const [earlier, setEarlier] = useState<VisitRecord[]>(() => loadUnsentVisits(visit))
+  // Set if a dart is ever reported out of order, so a log that cannot replay faithfully is flagged in the results.
+  const logGap = useRef(false)
   const warm = useRef<WarmRun>({ inputs: [], ctxs: [], settings: null })
   const [warmCount, setWarmCount] = useState(0)
   const [suggest, setSuggest] = useState<LeadSuggestion | null>(null)
@@ -62,6 +70,22 @@ export function Leg() {
     setCopyText('')
   }
 
+  /** Save this visit's logs so far (unsent: there is new data since any earlier send). Never throws. */
+  const persist = (frozen: Settings | null = played) => {
+    const w = warm.current
+    saveVisit({
+      visit,
+      startedAt,
+      seed: legSeed,
+      played: frozen,
+      inputs: runInputs.current,
+      warmSeed,
+      warmSettings: w.settings,
+      warmInputs: w.inputs,
+      sent: false,
+    })
+  }
+
   const advance = (next: LegFlow) => {
     flowRef.current = next
     setFlow(next)
@@ -83,6 +107,7 @@ export function Leg() {
     if (w.settings === null) w.settings = settings
     w.inputs.push(e.input)
     w.ctxs.push(e.ctx)
+    persist(null)
     const n = w.inputs.length
     setWarmCount(n)
     if (n === WARMUP_DARTS) {
@@ -99,9 +124,12 @@ export function Leg() {
   }
 
   const onThrow = (e: ThrowEvent) => {
+    // The stage index must equal this dart's position in the log; if not, the log no longer replays faithfully.
+    if (e.index !== runInputs.current.length) logGap.current = true
     runInputs.current.push(e.input)
     advance(onDart(flowRef.current!, e.result.bed))
     resetResultsStatus()
+    persist()
   }
 
   const rate = (rating: Rating) => {
@@ -111,12 +139,14 @@ export function Leg() {
     advance(next)
     resetResultsStatus()
     saveJson(LEGS_KEY, next.legs)
+    persist()
   }
 
   const another = () => {
     advance(nextLeg(flowRef.current!))
     resetResultsStatus()
     setShowResults(false)
+    persist()
   }
 
   const closeResults = () => {
@@ -124,37 +154,48 @@ export function Leg() {
     setShowResults(false)
   }
 
-  /** Only this visit's legs go out: the run log covers this visit only, and earlier visits were sent (or not) then. */
+  /** This visit's legs and logs, plus every earlier visit on this phone that was never sent. */
   const payload = (): ResultsPayload => {
     const frozen = played ?? settings
-    const run: RunLog = { v: 1, seed: legSeed, settings: frozen, throws: runInputs.current }
     const w = warm.current
-    const warmLog: RunLog | null = w.inputs.length ? { v: 1, seed: warmSeed, settings: w.settings ?? settings, throws: w.inputs } : null
-    return {
-      v: 1,
+    return buildPayload({
       build: __BUILD_ID__,
       visit,
       device: navigator.userAgent,
       settings: frozen,
-      legs: flowRef.current!.legs.filter((l) => l.visit === visit),
-      run: encodeRunCode(run),
-      warmup: warmLog ? encodeRunCode(warmLog) : null,
-    }
+      legs: flowRef.current!.legs,
+      run: { v: 1, seed: legSeed, settings: frozen, throws: runInputs.current },
+      warm: w.inputs.length ? { v: 1, seed: warmSeed, settings: w.settings ?? settings, throws: w.inputs } : null,
+      earlier,
+      logGap: logGap.current,
+    })
+  }
+
+  /** After a Send that returned OK or a Copy that worked: those earlier visits are done, and so is this one unless it moved on. */
+  const delivered = (p: ResultsPayload, version: number) => {
+    const ids = p.earlier.map((e) => e.visit)
+    if (version === statusVersion.current) ids.push(visit)
+    markSent(ids)
+    setEarlier((list) => list.filter((v) => !ids.includes(v.visit)))
   }
 
   const send = async () => {
     const version = statusVersion.current
     setSent('sending')
-    const ok = await sendResults(FEEDBACK_URL, payload())
+    const p = payload()
+    const ok = await sendResults(FEEDBACK_URL, p)
+    if (ok) delivered(p, version)
     if (version === statusVersion.current) setSent(ok ? 'ok' : 'failed') // the data moved on while sending: drop the stale answer
   }
 
   const copy = async () => {
     const version = statusVersion.current
-    const text = resultsText(payload())
+    const p = payload()
+    const text = resultsText(p)
     setCopyText(text)
     try {
       await navigator.clipboard.writeText(text)
+      delivered(p, version)
       if (version === statusVersion.current) setCopied('ok')
     } catch {
       if (version === statusVersion.current) setCopied('failed')
@@ -164,6 +205,7 @@ export function Leg() {
   if (step === 'calibrate') {
     return (
       <Calibrate
+        intro
         onDone={(ms) => {
           setLead(snapLead(ms))
           setStep('warmup')
@@ -195,7 +237,8 @@ export function Leg() {
         </div>
         {suggest && (
           <div class="overlay">
-            <p>Your taps run {suggest.leadMs >= 0 ? 'late' : 'early'}. Adjust for this phone?</p>
+            <p data-testid="lead-advice">Your taps run {leadAdvice(suggest, settings.leadMs).direction}. Adjust for this phone?</p>
+            <p class="muted">{leadAdvice(suggest, settings.leadMs).group}</p>
             <div class="row">
               <button class="btn primary" data-testid="apply-lead" onClick={() => applySuggestion(suggest)}>Apply {suggest.leadMs >= 0 ? '+' : ''}{snapLead(suggest.leadMs)} ms</button>
               <button class="btn" data-testid="keep-lead" onClick={() => startPlaying(settings)}>Keep as is</button>
@@ -225,7 +268,14 @@ export function Leg() {
           <textarea readOnly rows={6} style={{ width: '100%', maxWidth: 420 }} value={copyText} onFocus={(e) => e.currentTarget.select()} />
         </>
       )}
-      <p class="muted">If you reload, tap Copy{FEEDBACK_URL ? '/Send' : ''} first: reloading loses the throw log.</p>
+      {earlier.length > 0 && (
+        <p class="muted" data-testid="earlier-visits">Also includes {earlier.length} earlier {earlier.length === 1 ? 'visit' : 'visits'} on this phone that {earlier.length === 1 ? 'was' : 'were'} not sent yet.</p>
+      )}
+      {storageOk ? (
+        <p class="muted">Your throws are kept on this phone, so a reload does not lose them.</p>
+      ) : (
+        <p class="muted" data-testid="not-saved">Private tab: your progress isn't saved on this phone. Copy or send after each leg.</p>
+      )}
     </>
   )
 

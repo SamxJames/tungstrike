@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { barLeftPx, snapLead, tapError } from './calibrate-math.ts'
+import { barLeftPx, leadAdvice, snapLead, tapError } from './calibrate-math.ts'
 
 describe('barLeftPx', () => {
   it('runs from the left edge to the right edge of the track', () => {
@@ -28,6 +28,20 @@ describe('tapError', () => {
     expect(tapError(2000 + 1530, 2000)).toBe(30)
     expect(tapError(7000 + 4470, 7000)).toBe(-30)
     expect(tapError(250 + 3000 + 500 + 12, 250)).toBe(12)
+  })
+})
+
+describe('leadAdvice', () => {
+  const s = (leadMs: number) => ({ usable: true, leadMs, before: 160, after: 80, gain: 0.5 })
+  it('says late or early from the CHANGE against the current lead, not the sign of the suggestion', () => {
+    expect(leadAdvice(s(20), 60).direction).toBe('early') // 60 -> 20: release earlier
+    expect(leadAdvice(s(-20), -60).direction).toBe('late') // -60 -> -20: more lead
+    expect(leadAdvice(s(62), 30).direction).toBe('late')
+    expect(leadAdvice(s(-30), 2).direction).toBe('early')
+  })
+  it('gives the same group line the Lab shows', () => {
+    expect(leadAdvice(s(62), 30).group).toBe('Group 2.0 → 1.0 treble widths with +62 ms.')
+    expect(leadAdvice(s(-30), 2).group).toBe('Group 2.0 → 1.0 treble widths with -30 ms.')
   })
 })
 

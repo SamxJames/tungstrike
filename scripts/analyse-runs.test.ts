@@ -36,6 +36,7 @@ const payload = (over: Partial<ResultsPayload>): ResultsPayload => ({
   legs: [],
   run: code,
   warmup: null,
+  earlier: [],
   ...over,
 })
 
