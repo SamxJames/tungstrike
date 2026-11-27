@@ -1,0 +1,607 @@
+{
+ "log": {
+  "v": 1,
+  "seed": 4242,
+  "settings": {
+   "wobbleRadius": 25,
+   "loopMs": 1600,
+   "shape": 100,
+   "scatterCap": 0,
+   "leadMs": 60,
+   "zoomPct": 200
+  },
+  "throws": [
+   {
+    "target": {
+     "x": 0,
+     "y": 1900
+    },
+    "releaseTick": 10,
+    "rawMs": 140
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 64,
+    "rawMs": 572
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 66,
+    "rawMs": 588
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 34,
+    "rawMs": 332
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 10,
+    "rawMs": 140
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 79,
+    "rawMs": 692
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 74,
+    "rawMs": 652
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 36,
+    "rawMs": 348
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 575
+    },
+    "releaseTick": 43,
+    "rawMs": 404
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 575
+    },
+    "releaseTick": 30,
+    "rawMs": 300
+   },
+   {
+    "target": {
+     "x": 178,
+     "y": 547
+    },
+    "releaseTick": 60,
+    "rawMs": 540
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1660
+    },
+    "releaseTick": 2,
+    "rawMs": 76
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 17,
+    "rawMs": 196
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 6,
+    "rawMs": 108
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 77,
+    "rawMs": 676
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 36,
+    "rawMs": 348
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 0,
+    "rawMs": 60
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 16,
+    "rawMs": 188
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1030
+    },
+    "releaseTick": 3,
+    "rawMs": 84
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 575
+    },
+    "releaseTick": 13,
+    "rawMs": 164
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 575
+    },
+    "releaseTick": 0,
+    "rawMs": 60
+   },
+   {
+    "target": {
+     "x": 178,
+     "y": 547
+    },
+    "releaseTick": 0,
+    "rawMs": 60
+   },
+   {
+    "target": {
+     "x": 0,
+     "y": 1660
+    },
+    "releaseTick": 12,
+    "rawMs": 156
+   }
+  ]
+ },
+ "expected": {
+  "throws": [
+   {
+    "index": 0,
+    "leg": 0,
+    "crosshair": {
+     "x": 41,
+     "y": 1859
+    },
+    "landing": {
+     "x": 41,
+     "y": 1859
+    },
+    "ring": "miss",
+    "sector": 0,
+    "score": 0,
+    "remaining": 501,
+    "bust": false
+   },
+   {
+    "index": 1,
+    "leg": 0,
+    "crosshair": {
+     "x": -41,
+     "y": 990
+    },
+    "landing": {
+     "x": -41,
+     "y": 990
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 441,
+    "bust": false
+   },
+   {
+    "index": 2,
+    "leg": 0,
+    "crosshair": {
+     "x": 37,
+     "y": 995
+    },
+    "landing": {
+     "x": 37,
+     "y": 995
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 381,
+    "bust": false
+   },
+   {
+    "index": 3,
+    "leg": 0,
+    "crosshair": {
+     "x": -38,
+     "y": 993
+    },
+    "landing": {
+     "x": -38,
+     "y": 993
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 321,
+    "bust": false
+   },
+   {
+    "index": 4,
+    "leg": 0,
+    "crosshair": {
+     "x": -35,
+     "y": 995
+    },
+    "landing": {
+     "x": -35,
+     "y": 995
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 261,
+    "bust": false
+   },
+   {
+    "index": 5,
+    "leg": 0,
+    "crosshair": {
+     "x": -40,
+     "y": 991
+    },
+    "landing": {
+     "x": -40,
+     "y": 991
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 201,
+    "bust": false
+   },
+   {
+    "index": 6,
+    "leg": 0,
+    "crosshair": {
+     "x": -41,
+     "y": 990
+    },
+    "landing": {
+     "x": -41,
+     "y": 990
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 141,
+    "bust": false
+   },
+   {
+    "index": 7,
+    "leg": 0,
+    "crosshair": {
+     "x": 35,
+     "y": 995
+    },
+    "landing": {
+     "x": 35,
+     "y": 995
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 81,
+    "bust": false
+   },
+   {
+    "index": 8,
+    "leg": 0,
+    "crosshair": {
+     "x": -75,
+     "y": 506
+    },
+    "landing": {
+     "x": -75,
+     "y": 506
+    },
+    "ring": "innerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 61,
+    "bust": false
+   },
+   {
+    "index": 9,
+    "leg": 0,
+    "crosshair": {
+     "x": -77,
+     "y": 504
+    },
+    "landing": {
+     "x": -77,
+     "y": 504
+    },
+    "ring": "innerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 41,
+    "bust": false
+   },
+   {
+    "index": 10,
+    "leg": 0,
+    "crosshair": {
+     "x": 242,
+     "y": 486
+    },
+    "landing": {
+     "x": 242,
+     "y": 486
+    },
+    "ring": "innerSingle",
+    "sector": 1,
+    "score": 1,
+    "remaining": 40,
+    "bust": false
+   },
+   {
+    "index": 11,
+    "leg": 0,
+    "crosshair": {
+     "x": 40,
+     "y": 1621
+    },
+    "landing": {
+     "x": 40,
+     "y": 1621
+    },
+    "ring": "double",
+    "sector": 20,
+    "score": 40,
+    "remaining": 0,
+    "bust": false
+   },
+   {
+    "index": 12,
+    "leg": 1,
+    "crosshair": {
+     "x": -38,
+     "y": 993
+    },
+    "landing": {
+     "x": -38,
+     "y": 993
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 441,
+    "bust": false
+   },
+   {
+    "index": 13,
+    "leg": 1,
+    "crosshair": {
+     "x": -41,
+     "y": 990
+    },
+    "landing": {
+     "x": -41,
+     "y": 990
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 381,
+    "bust": false
+   },
+   {
+    "index": 14,
+    "leg": 1,
+    "crosshair": {
+     "x": 38,
+     "y": 993
+    },
+    "landing": {
+     "x": 38,
+     "y": 993
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 321,
+    "bust": false
+   },
+   {
+    "index": 15,
+    "leg": 1,
+    "crosshair": {
+     "x": 37,
+     "y": 994
+    },
+    "landing": {
+     "x": 37,
+     "y": 994
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 261,
+    "bust": false
+   },
+   {
+    "index": 16,
+    "leg": 1,
+    "crosshair": {
+     "x": 38,
+     "y": 993
+    },
+    "landing": {
+     "x": 38,
+     "y": 993
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 201,
+    "bust": false
+   },
+   {
+    "index": 17,
+    "leg": 1,
+    "crosshair": {
+     "x": 35,
+     "y": 995
+    },
+    "landing": {
+     "x": 35,
+     "y": 995
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 141,
+    "bust": false
+   },
+   {
+    "index": 18,
+    "leg": 1,
+    "crosshair": {
+     "x": -37,
+     "y": 994
+    },
+    "landing": {
+     "x": -37,
+     "y": 994
+    },
+    "ring": "treble",
+    "sector": 20,
+    "score": 60,
+    "remaining": 81,
+    "bust": false
+   },
+   {
+    "index": 19,
+    "leg": 1,
+    "crosshair": {
+     "x": -79,
+     "y": 503
+    },
+    "landing": {
+     "x": -79,
+     "y": 503
+    },
+    "ring": "innerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 61,
+    "bust": false
+   },
+   {
+    "index": 20,
+    "leg": 1,
+    "crosshair": {
+     "x": -65,
+     "y": 637
+    },
+    "landing": {
+     "x": -65,
+     "y": 637
+    },
+    "ring": "innerSingle",
+    "sector": 20,
+    "score": 20,
+    "remaining": 41,
+    "bust": false
+   },
+   {
+    "index": 21,
+    "leg": 1,
+    "crosshair": {
+     "x": 158,
+     "y": 567
+    },
+    "landing": {
+     "x": 158,
+     "y": 567
+    },
+    "ring": "innerSingle",
+    "sector": 1,
+    "score": 1,
+    "remaining": 40,
+    "bust": false
+   },
+   {
+    "index": 22,
+    "leg": 1,
+    "crosshair": {
+     "x": 37,
+     "y": 1625
+    },
+    "landing": {
+     "x": 37,
+     "y": 1625
+    },
+    "ring": "double",
+    "sector": 20,
+    "score": 40,
+    "remaining": 0,
+    "bust": false
+   }
+  ],
+  "legs": [
+   {
+    "darts": 12,
+    "won": true,
+    "busts": 0
+   },
+   {
+    "darts": 11,
+    "won": true,
+    "busts": 0
+   }
+  ]
+ }
+}

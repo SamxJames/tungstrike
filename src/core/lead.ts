@@ -29,7 +29,9 @@ export function bestLead(ctxs: ThrowCtx[], rawMs: number[], target: Point, curre
     }
   }
   const gain = before === 0 ? 0 : (before - best) / before
-  return { usable: gain >= 0.1, leadMs: bestLeadMs, before, after: best, gain }
+  const usable = gain >= 0.1
+  // A suggestion that is not worth taking leaves the lead where it is.
+  return { usable, leadMs: usable ? bestLeadMs : currentLeadMs, before, after: best, gain }
 }
 
 export function estimateLead(errorsMs: number[]): number {

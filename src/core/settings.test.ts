@@ -10,11 +10,26 @@ describe('settings', () => {
     expect(decodeSettings(encodeSettings(s))).toEqual({ ...s, leadMs: DEFAULT_SETTINGS.leadMs })
   })
   it('clamps out-of-range values and ignores junk and unknown keys', () => {
-    const s = decodeSettings('#v1&rad=999&loop=1&shp=abc&zz=5&sct=-4')
+    const s = decodeSettings('#v1&rad=999&loop=1&shp=7&zz=5&sct=-4')
     expect(s.wobbleRadius).toBe(40)
     expect(s.loopMs).toBe(800)
-    expect(s.shape).toBe(100)
+    expect(s.shape).toBe(7)
     expect(s.scatterCap).toBe(0)
+  })
+  it('ignores a junk value and keeps the default for that field', () => {
+    expect(decodeSettings('#v1&loop=abc').loopMs).toBe(1600)
+  })
+  it('clamps lead and zoom at both ends', () => {
+    expect(clampSettings({ leadMs: -999 }).leadMs).toBe(-150)
+    expect(clampSettings({ leadMs: 999 }).leadMs).toBe(150)
+    expect(clampSettings({ zoomPct: 1 }).zoomPct).toBe(150)
+    expect(clampSettings({ zoomPct: 9999 }).zoomPct).toBe(350)
+    expect(decodeSettings('#v1&zm=10').zoomPct).toBe(150)
+    expect(decodeSettings('#v1&zm=900').zoomPct).toBe(350)
+  })
+  it('never returns -0 (a small negative lead rounds to +0)', () => {
+    expect(Object.is(clampSettings({ leadMs: -0.4 }).leadMs, 0)).toBe(true)
+    expect(Object.is(clampSettings({ leadMs: -0 }).leadMs, 0)).toBe(true)
   })
   it('returns defaults for an empty hash', () => {
     expect(decodeSettings('')).toEqual(DEFAULT_SETTINGS)

@@ -50,6 +50,38 @@ describe('leg', () => {
     const won = applyDart(at(40), makeBed('double', 20))
     expect(applyDart(won, makeBed('treble', 20))).toBe(won)
   })
+  it('busts on the third dart of a turn and resets to the turn start', () => {
+    let s = at(100)
+    s = applyDart(s, makeBed('innerSingle', 20)) // 80
+    s = applyDart(s, makeBed('innerSingle', 20)) // 60
+    s = applyDart(s, makeBed('treble', 20)) // 0 on a treble: bust
+    expect(s).toMatchObject({ remaining: 100, turnStart: 100, dartsInTurn: 0, dartsTotal: 3, busts: 1, won: false, lastBust: true })
+  })
+  it('wins on the second or third dart of a turn, counting every dart', () => {
+    let s = at(60)
+    s = applyDart(s, makeBed('innerSingle', 20)) // 40
+    s = applyDart(s, makeBed('double', 20))
+    expect(s).toMatchObject({ won: true, remaining: 0, dartsTotal: 2 })
+    let t = at(61)
+    t = applyDart(t, makeBed('innerSingle', 1)) // 60
+    t = applyDart(t, makeBed('innerSingle', 20)) // 40
+    t = applyDart(t, makeBed('double', 20))
+    expect(t).toMatchObject({ won: true, dartsTotal: 3 })
+  })
+  it('a treble or the outer bull cannot finish: both bust', () => {
+    expect(applyDart(at(60), makeBed('treble', 20))).toMatchObject({ won: false, remaining: 60, lastBust: true })
+    expect(applyDart(at(25), makeBed('outerBull', 0))).toMatchObject({ won: false, remaining: 25, lastBust: true })
+  })
+  it('accumulates busts across turns', () => {
+    let s = at(10)
+    s = applyDart(s, makeBed('treble', 20)) // bust 1
+    s = applyDart(s, makeBed('treble', 20)) // bust 2
+    s = applyDart(s, makeBed('innerSingle', 9)) // leaves 1: bust 3
+    expect(s).toMatchObject({ busts: 3, remaining: 10, dartsTotal: 3 })
+  })
+  it('reaching 1 with a single is a bust', () => {
+    expect(applyDart(at(2), makeBed('innerSingle', 1))).toMatchObject({ remaining: 2, lastBust: true, busts: 1 })
+  })
   it('clears lastBust on the next normal dart', () => {
     let s = applyDart(at(21), makeBed('double', 10))
     s = applyDart(s, makeBed('innerSingle', 1))

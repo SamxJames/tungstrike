@@ -21,7 +21,8 @@ export function clampSettings(partial: Partial<Settings>): Settings {
     const v = partial[key]
     if (v === undefined || !Number.isFinite(v)) continue
     const [lo, hi] = SETTING_RANGES[key]
-    out[key] = Math.min(hi, Math.max(lo, Math.round(v)))
+    // `+ 0` turns -0 (Math.round of a small negative) into +0, so settings serialise and compare the same.
+    out[key] = Math.min(hi, Math.max(lo, Math.round(v))) + 0
   }
   return out
 }

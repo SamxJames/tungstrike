@@ -33,6 +33,32 @@ describe('bestLead', () => {
     const ctxs = Array.from({ length: 5 }, (_, i) => ctxFor(i))
     expect(bestLead(ctxs, ctxs.map(() => 500), target, 0).usable).toBe(false)
   })
+  it('still finds a late tapper’s lead when the taps jitter by up to 10ms', () => {
+    const ctxs = Array.from({ length: 12 }, (_, i) => ctxFor(i))
+    const jitter = [10, -10, 4, -6, 0, 8, -2, -9, 6, 3, -4, 9]
+    const rawMs = ctxs.map((c, i) => bestTick(c) * 8 + 40 + jitter[i])
+    const s = bestLead(ctxs, rawMs, target, 0)
+    expect(s.usable).toBe(true)
+    expect(Math.abs(s.leadMs - 40)).toBeLessThanOrEqual(12)
+  })
+  it('keeps the current lead when changing it would not tighten the group by 10%', () => {
+    const ctxs = Array.from({ length: 10 }, (_, i) => ctxFor(i))
+    const rawMs = ctxs.map((c) => bestTick(c) * 8 + 20) // already perfect at a 20ms lead
+    const s = bestLead(ctxs, rawMs, target, 20)
+    expect(s.usable).toBe(false)
+    expect(s.leadMs).toBe(20)
+  })
+  it('handles no darts at all', () => {
+    expect(bestLead([], [], target, 36)).toEqual({ usable: false, leadMs: 36, before: 0, after: 0, gain: 0 })
+  })
+  it('returns the current lead (not a nearby grid value) whenever the suggestion is not usable', () => {
+    for (const seedShift of [0, 50, 100]) {
+      const ctxs = Array.from({ length: 10 }, (_, i) => ctxFor(i + seedShift))
+      const rawMs = ctxs.map((c, i) => bestTick(c) * 8 + 30 + (i % 3) * 4) // near-perfect at 30-38ms
+      const s = bestLead(ctxs, rawMs, target, 34)
+      if (!s.usable) expect(s.leadMs).toBe(34)
+    }
+  })
 })
 
 describe('estimateLead', () => {

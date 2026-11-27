@@ -23,6 +23,14 @@ describe('bedAt', () => {
     expect(bedAt({ x: 0, y: 1071 }).ring).toBe('outerSingle')
     expect(bedAt({ x: 0, y: 1700 }).ring).toBe('double')
   })
+  it('puts the bull, outer bull and double edges in the inner bed too', () => {
+    expect(bedAt({ x: 0, y: 64 }).ring).toBe('bull')
+    expect(bedAt({ x: 0, y: 65 }).ring).toBe('outerBull')
+    expect(bedAt({ x: 0, y: 159 }).ring).toBe('outerBull')
+    expect(bedAt({ x: 0, y: 160 }).ring).toBe('innerSingle')
+    expect(bedAt({ x: 0, y: 1620 }).ring).toBe('outerSingle')
+    expect(bedAt({ x: 0, y: 1621 }).ring).toBe('double')
+  })
   it('scores trebles and doubles', () => {
     expect(bedAt({ x: 0, y: 1030 }).score).toBe(60)
     expect(bedAt({ x: 0, y: 1660 }).score).toBe(40)
@@ -49,9 +57,27 @@ describe('bedCentre', () => {
       }
     }
   })
+  it('puts sector 20 bed centres at the mid radius of each ring', () => {
+    expect(bedCentre(makeBed('innerSingle', 20))).toEqual({ x: 0, y: 575 })
+    expect(bedCentre(makeBed('treble', 20))).toEqual({ x: 0, y: 1030 })
+    expect(bedCentre(makeBed('outerSingle', 20))).toEqual({ x: 0, y: 1345 })
+    expect(bedCentre(makeBed('double', 20))).toEqual({ x: 0, y: 1660 })
+  })
   it('centres the bulls on the origin', () => {
     expect(bedCentre(makeBed('bull', 0))).toEqual({ x: 0, y: 0 })
     expect(bedCentre(makeBed('outerBull', 0))).toEqual({ x: 0, y: 0 })
+  })
+})
+
+describe('bedLabel', () => {
+  it('labels every kind of bed', () => {
+    expect(bedLabel(makeBed('innerSingle', 7))).toBe('S7')
+    expect(bedLabel(makeBed('outerSingle', 19))).toBe('S19')
+    expect(bedLabel(makeBed('double', 16))).toBe('D16')
+    expect(bedLabel(makeBed('treble', 20))).toBe('T20')
+    expect(bedLabel(makeBed('outerBull', 0))).toBe('25')
+    expect(bedLabel(makeBed('bull', 0))).toBe('Bull')
+    expect(bedLabel(makeBed('miss', 0))).toBe('Miss')
   })
 })
 

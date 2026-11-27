@@ -93,14 +93,21 @@ describe('resolveThrow', () => {
     expect(r.landing).toEqual({ x: r.crosshair.x + r.scatter.x, y: r.crosshair.y + r.scatter.y })
     expect(r.bed.ring).toBeDefined()
   })
-  it('guarantees a hit when the ring is fully inside the bed', () => {
-    // Tiny cap (0.2 treble width = 16 units) around the middle of T20: every dart lands in the treble.
-    const s = { ...DEFAULT_SETTINGS, wobbleRadius: 10, scatterCap: 2 }
+  it('guarantees a hit when the wobble plus the ring fit inside the bed', () => {
+    // Wobble 16 units + scatter cap 16 units = 32 < 40 (half a treble width): every dart, at any tick, is a T20.
+    const s = { ...DEFAULT_SETTINGS, wobbleRadius: 2, scatterCap: 2 }
     for (let i = 0; i < 300; i++) {
-      const r = resolveThrow(ctx({ throwIndex: i }, s), 0)
-      const cross = Math.hypot(r.crosshair.x, r.crosshair.y - 1030)
-      if (cross + 2 * 8 < (UNITS_PER_TREBLE_WIDTH / 2) - 1) {
-        expect(r.bed.ring === 'treble' && r.bed.sector === 20).toBe(true)
+      const r = resolveThrow(ctx({ throwIndex: i }, s), (i * 37) % 200)
+      expect(Math.hypot(r.crosshair.x, r.crosshair.y - 1030) + 2 * 8).toBeLessThan(UNITS_PER_TREBLE_WIDTH / 2)
+      expect(r.bed.ring === 'treble' && r.bed.sector === 20).toBe(true)
+    }
+  })
+  it('never produces -0 anywhere in a result (it survives a JSON round trip unchanged) over 2000 throws', () => {
+    for (let i = 0; i < 2000; i++) {
+      const r = resolveThrow(ctx({ throwIndex: i, target: { x: 0, y: 0 } }), i % 250)
+      const round = JSON.parse(JSON.stringify(r))
+      for (const k of ['crosshair', 'scatter', 'landing'] as const) {
+        expect(Object.is(round[k].x, r[k].x) && Object.is(round[k].y, r[k].y)).toBe(true)
       }
     }
   })
